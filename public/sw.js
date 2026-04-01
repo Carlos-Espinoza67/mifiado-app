@@ -13,6 +13,12 @@ self.addEventListener('install', (e) => {
 
 self.addEventListener('fetch', (e) => {
   e.respondWith(
-    caches.match(e.request).then((response) => response || fetch(e.request))
+    fetch(e.request)
+      .then((response) => {
+        const resClone = response.clone();
+        caches.open(cacheName).then((cache) => cache.put(e.request, resClone));
+        return response;
+      })
+      .catch(() => caches.match(e.request).then((res) => res))
   );
 });
