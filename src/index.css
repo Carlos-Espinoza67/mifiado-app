@@ -1,0 +1,240 @@
+:root {
+  /* LIGHT MODE (Default) - "Apple iOS Style" */
+  --bg-main: #f2f2f7; /* iOS Light Gray */
+  --bg-surface: #ffffff;
+  --bg-card: #ffffff;
+  --bg-glass: rgba(255, 255, 255, 0.75);
+  --text-primary: #000000;
+  --text-secondary: #8e8e93; /* iOS Gray */
+  --text-inverse: #ffffff;
+  --accent: #007aff; /* iOS Blue */
+  --accent-soft: rgba(0, 122, 255, 0.1);
+  --accent-glow: rgba(0, 122, 255, 0.15);
+  --danger: #ff3b30; /* iOS Red */
+  --danger-soft: rgba(255, 59, 48, 0.1);
+  --success: #34c759; /* iOS Green */
+  --success-soft: rgba(52, 199, 89, 0.1);
+  --warning: #ffcc00;
+  --border-color: rgba(60, 60, 67, 0.12); /* Subtle separator */
+  --shadow-glass: rgba(0, 0, 0, 0.04);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.03);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.04);
+  --card-gradient: linear-gradient(135deg, #007aff, #005bb5);
+  
+  --font-main: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --radius-full: 100px;
+  --radius-xl: 18px;
+  --radius-lg: 14px;
+  --radius-md: 10px;
+  --transition: all 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+[data-theme="dark"] {
+  /* DARK MODE */
+  --bg-main: #000000; /* OLED Black */
+  --bg-surface: #1c1c1e; /* iOS Dark Gray */
+  --bg-card: #1c1c1e;
+  --bg-glass: rgba(28, 28, 30, 0.75);
+  --text-primary: #ffffff;
+  --text-secondary: #98989d;
+  --text-inverse: #ffffff;
+  --accent: #0a84ff; /* iOS Dark Blue */
+  --accent-soft: rgba(10, 132, 255, 0.15);
+  --accent-glow: rgba(10, 132, 255, 0.2);
+  --danger: #ff453a;
+  --danger-soft: rgba(255, 69, 58, 0.15);
+  --success: #30d158;
+  --success-soft: rgba(48, 209, 88, 0.15);
+  --warning: #ffd60a;
+  --border-color: rgba(84, 84, 88, 0.65);
+  --shadow-glass: rgba(0, 0, 0, 0.5);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.4);
+  --card-gradient: linear-gradient(135deg, #2c2c2e, #000000);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  font-family: var(--font-main);
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+  line-height: 1.5;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  min-height: 100vh;
+}
+
+.container {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 1.5rem;
+  padding-bottom: 7.5rem;
+  min-height: 100vh;
+}
+
+/* Card Styling */
+.card {
+  background-color: var(--bg-card);
+  border-radius: 16px;
+  padding: 1rem;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+  transition: transform 0.2s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.2s ease;
+}
+
+[data-theme="dark"] .card {
+  border: 1px solid var(--border-color);
+}
+
+.card:active {
+  transform: scale(0.98);
+}
+
+/* Buttons */
+.btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.6rem 1rem;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  border: none;
+  cursor: pointer;
+  transition: var(--transition);
+  font-family: inherit;
+  width: 100%;
+}
+
+.btn-primary {
+  background-color: var(--accent);
+  color: white;
+  box-shadow: 0 4px 12px var(--accent-glow);
+}
+
+.btn-primary:active { transform: scale(0.96); }
+
+.btn-glass {
+  background-color: rgba(142, 142, 147, 0.12);
+  color: var(--text-primary);
+}
+
+.btn-danger-soft {
+  background-color: var(--danger-soft);
+  color: var(--danger);
+  border-radius: var(--radius-lg);
+}
+
+.btn-success-soft {
+  background-color: var(--success-soft);
+  color: var(--success);
+  border-radius: var(--radius-lg);
+}
+
+/* Inputs */
+.input-group {
+  margin-bottom: 1rem;
+}
+
+.input-label {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: 0.4rem;
+  display: block;
+}
+
+.input-field {
+  width: 100%;
+  background-color: var(--bg-main);
+  border: none;
+  border-radius: 10px;
+  padding: 0.6rem 0.8rem;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  font-family: inherit;
+  transition: var(--transition);
+}
+
+[data-theme="dark"] .input-field {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.input-field:focus {
+  outline: none;
+  background-color: var(--bg-surface);
+  box-shadow: 0 0 0 2px var(--accent);
+}
+
+/* Typography */
+h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 0.5rem; }
+h2 { font-size: 1.1rem; font-weight: 600; letter-spacing: -0.01em; }
+p { color: var(--text-secondary); }
+
+/* Custom Utilities */
+.text-danger { color: var(--danger); }
+.text-success { color: var(--success); }
+.text-accent { color: var(--accent); }
+.text-secondary { color: var(--text-secondary); }
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+.font-bold { font-weight: 600; }
+.font-heavy { font-weight: 700; }
+.w-full { width: 100%; }
+
+/* Layout Utilities missing from previous setup */
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.flex-1 { flex: 1; }
+.items-center { align-items: center; }
+.items-start { align-items: flex-start; }
+.justify-between { justify-content: space-between; }
+.justify-center { justify-content: center; }
+.gap-1 { gap: 0.25rem; }
+.gap-2 { gap: 0.5rem; }
+.gap-3 { gap: 0.75rem; }
+.gap-4 { gap: 1rem; }
+.mb-1 { margin-bottom: 0.25rem; }
+.mb-2 { margin-bottom: 0.5rem; }
+.mb-3 { margin-bottom: 0.75rem; }
+.mb-4 { margin-bottom: 1rem; }
+.mb-6 { margin-bottom: 1.5rem; }
+.mb-8 { margin-bottom: 2rem; }
+.p-3 { padding: 0.75rem; }
+.p-4 { padding: 1rem; }
+.pb-6 { padding-bottom: 1.5rem; }
+.pb-12 { padding-bottom: 3rem; }
+.mt-1 { margin-top: 0.25rem; }
+.mt-2 { margin-top: 0.5rem; }
+.mt-4 { margin-top: 1rem; }
+.block { display: block; }
+.rounded-md { border-radius: var(--radius-md); }
+.rounded-xl { border-radius: var(--radius-xl); }
+
+/* Animations */
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-slide-up {
+  animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Bottom Nav Fix for Soft Design */
+.nav-pill {
+  border-radius: var(--radius-lg);
+  padding: 0.4rem 0.8rem;
+  transition: var(--transition);
+}
+
+.nav-active {
+  color: var(--accent);
+}
