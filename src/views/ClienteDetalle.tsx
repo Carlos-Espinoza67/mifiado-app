@@ -91,8 +91,9 @@ export default function ClienteDetalle() {
   }
 
   return (
-    <div className="animate-slide-up pb-12">
-      <div className="flex justify-between items-center mb-6" style={{ background: 'var(--bg-main)', position: 'sticky', top: 0, paddingBottom: '1rem', paddingTop: '1rem', zIndex: 10 }}>
+    <>
+      <div className="animate-slide-up">
+        <div className="flex justify-between items-center mb-6" style={{ background: 'var(--bg-main)', position: 'sticky', top: 0, paddingBottom: '1rem', paddingTop: '1rem', zIndex: 10 }}>
         <div className="flex items-center gap-4">
           <button onClick={() => navigate('/clientes')} className="btn" style={{ width: 'auto', padding: '0.6rem', background: 'var(--bg-card)', color: 'var(--text-primary)', borderRadius: 'var(--radius-md)' }}>
             <ArrowLeft size={22} />
@@ -205,6 +206,7 @@ export default function ClienteDetalle() {
           )
         })}
       </div>
+      </div>
 
       {deleteConfirmId && (
         <div className="animate-fade-in" style={{
@@ -311,6 +313,6 @@ export default function ClienteDetalle() {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }

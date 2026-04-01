@@ -50,8 +50,9 @@ export default function Clientes() {
   }
 
   return (
-    <div className="animate-slide-up">
-      <div className="flex justify-between items-center mb-6">
+    <>
+      <div className="animate-slide-up">
+        <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Vecinos</h1>
         <button className="btn btn-primary" onClick={() => setShowAddModal(true)} style={{ width: 'auto', padding: '0.75rem' }}>
           <UserPlus size={22} />
@@ -112,6 +113,7 @@ export default function Clientes() {
           );
         })}
       </div>
+      </div>
 
       {showAddModal && (
         <div className="animate-fade-in" style={{
@@ -143,6 +145,6 @@ export default function Clientes() {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }
