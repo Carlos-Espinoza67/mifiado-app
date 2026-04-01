@@ -237,10 +237,10 @@ export default function ClienteDetalle() {
         <div className="animate-fade-in" style={{
           position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
           background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(10px)',
-          display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
-          zIndex: 100
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          zIndex: 100, padding: '1rem'
         }}>
-          <div className="card animate-slide-up" style={{ width: '100%', maxWidth: '500px', background: 'var(--bg-surface)', borderBottomRightRadius: 0, borderBottomLeftRadius: 0 }}>
+          <div className="card animate-slide-up" style={{ width: '100%', maxWidth: '400px', background: 'var(--bg-surface)' }}>
             <h2 className="text-xl mb-4 font-bold">Editar Vecino</h2>
             <form onSubmit={handleEditClient}>
               <div className="input-group">
