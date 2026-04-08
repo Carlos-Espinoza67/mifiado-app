@@ -43,7 +43,7 @@ export default function Dashboard() {
         fontSize: '1.8rem',
         letterSpacing: '-0.02em',
         marginTop: '0.5rem'
-      }}>BodegaApp</h1>
+      }}>Fiadoapp</h1>
       
       <div className="card mb-6" style={{ 
         background: 'var(--card-gradient)', 

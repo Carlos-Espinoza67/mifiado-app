@@ -49,7 +49,7 @@ export default function Auth() {
            <h1 style={{ fontSize: '1.8rem', marginBottom: '0.4rem', 
                background: 'linear-gradient(90deg, var(--accent), #42a5f5)', 
                WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-             BodegaApp
+             Fiadoapp
            </h1>
            <p className="text-secondary text-sm">Gestiona tus fiados en la nube de forma segura</p>
         </div>

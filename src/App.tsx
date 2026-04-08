@@ -43,7 +43,11 @@ function App() {
 
   useEffect(() => {
     if (!session) return;
-    const handleSync = () => syncToCloud(session.user.id);
+    const handleSync = async () => {
+      if (!navigator.onLine) return;
+      await syncFromCloud(session.user.id);
+      await syncToCloud(session.user.id);
+    };
     
     window.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'hidden') handleSync();
@@ -60,7 +64,7 @@ function App() {
 
   const toggleTheme = () => setTheme(prev => prev === 'light' ? 'dark' : 'light');
 
-  if (loading) return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: 'var(--bg-main)', color: 'var(--accent)', fontWeight: 'bold' }}>Cargando BodegaApp...</div>;
+  if (loading) return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: 'var(--bg-main)', color: 'var(--accent)', fontWeight: 'bold' }}>Cargando Fiadoapp...</div>;
 
   if (!session) return <Auth />;
 
@@ -107,7 +111,7 @@ function BottomNav() {
     }}>
       <Link to="/" className={`nav-pill ${location.pathname === '/' ? 'nav-active' : ''}`} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textDecoration: 'none', color: 'inherit' }}>
         <Home size={22} strokeWidth={location.pathname === '/' ? 2.5 : 2} />
-        <span style={{ fontSize: '0.65rem', fontWeight: location.pathname === '/' ? 700 : 500, marginTop: '4px' }}>BodegaApp</span>
+        <span style={{ fontSize: '0.65rem', fontWeight: location.pathname === '/' ? 700 : 500, marginTop: '4px' }}>Fiadoapp</span>
       </Link>
       <Link to="/clientes" className={`nav-pill ${location.pathname === '/clientes' ? 'nav-active' : ''}`} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textDecoration: 'none', color: 'inherit' }}>
         <Users size={22} strokeWidth={location.pathname === '/clientes' ? 2.5 : 2} />

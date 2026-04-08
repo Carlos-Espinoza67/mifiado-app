@@ -5,6 +5,7 @@ import { db } from "../db";
 import { ArrowLeft, User, PlusCircle, ArrowDownCircle, Trash2, CreditCard, Banknote, Smartphone } from "lucide-react";
 import { Link } from "react-router-dom";
 import { formatBs, formatUsd } from "../utils";
+import { supabase } from "../supabase";
 
 export default function ClienteDetalle() {
   const { id } = useParams();
@@ -37,6 +38,10 @@ export default function ClienteDetalle() {
   const handleDeleteClient = async () => {
     await db.transactions.where({ clientId: id }).delete();
     await db.clients.delete(id!);
+    if (navigator.onLine) {
+        await supabase.from('transactions').delete().eq('client_id', id);
+        await supabase.from('clients').delete().eq('id', id);
+    }
     navigate("/clientes");
   };
 
@@ -51,6 +56,9 @@ export default function ClienteDetalle() {
   const confirmDelete = async () => {
     if (deleteConfirmId) {
       await db.transactions.delete(deleteConfirmId);
+      if (navigator.onLine) {
+        await supabase.from('transactions').delete().eq('id', deleteConfirmId);
+      }
       setDeleteConfirmId(null);
     }
   };

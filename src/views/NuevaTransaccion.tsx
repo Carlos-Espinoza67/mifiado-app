@@ -30,6 +30,22 @@ export default function NuevaTransaccion() {
     if (preSelectedClient) setClientId(preSelectedClient);
   }, [preSelectedClient]);
 
+  const isDeuda = type === 'deuda';
+
+  const pendingDebts = (() => {
+    if (!transactionsRaw || isDeuda || !clientId) return [];
+    
+    const userDebts = transactionsRaw.filter(t => t.clientId === clientId && t.type === 'deuda');
+    const userAbonos = transactionsRaw.filter(t => t.clientId === clientId && t.type === 'abono');
+
+    return userDebts.map(debt => {
+      const abonos = userAbonos.filter(a => a.linkedDebtId === debt.id);
+      const paidUsd = abonos.reduce((sum, a) => sum + a.amountUsd, 0);
+      const remainingUsd = parseFloat((debt.amountUsd - paidUsd).toFixed(2));
+      return { ...debt, remainingUsd };
+    }).filter(d => d.remainingUsd > 0.00).sort((a,b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+  })();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!clientId) {
@@ -43,6 +59,11 @@ export default function NuevaTransaccion() {
 
     if (type === 'abono' && !paymentMethod) {
       alert("Elige el método de pago.");
+      return;
+    }
+
+    if (type === 'abono' && pendingDebts.length > 0 && !selectedDebtId) {
+      alert("Debes seleccionar a cuál cuenta pendiente abonar.");
       return;
     }
 
@@ -76,22 +97,6 @@ export default function NuevaTransaccion() {
 
     navigate(preSelectedClient ? `/cliente/${clientId}` : '/');
   };
-
-  const isDeuda = type === 'deuda';
-
-  const pendingDebts = (() => {
-    if (!transactionsRaw || isDeuda || !clientId) return [];
-    
-    const userDebts = transactionsRaw.filter(t => t.clientId === clientId && t.type === 'deuda');
-    const userAbonos = transactionsRaw.filter(t => t.clientId === clientId && t.type === 'abono');
-
-    return userDebts.map(debt => {
-      const abonos = userAbonos.filter(a => a.linkedDebtId === debt.id);
-      const paidUsd = abonos.reduce((sum, a) => sum + a.amountUsd, 0);
-      const remainingUsd = parseFloat((debt.amountUsd - paidUsd).toFixed(2));
-      return { ...debt, remainingUsd };
-    }).filter(d => d.remainingUsd > 0.00).sort((a,b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
-  })();
 
   const handleSelectDebt = (debt: any) => {
     if (selectedDebtId === debt.id) {

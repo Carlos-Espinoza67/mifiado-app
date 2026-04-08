@@ -42,18 +42,13 @@ export async function syncToCloud(userId: string) {
   });
 
   try {
-    // Espejo: Borrar todo en la nube y subir lo local (Fuente de Verdad = Dexie)
-    // El RLS asegura que SOLO se borren los datos de este bodeguero
-    await supabase.from('transactions').delete().eq('user_id', userId);
-    await supabase.from('clients').delete().eq('user_id', userId);
-
     if (cloudClients.length > 0) {
-      const { error } = await supabase.from('clients').insert(cloudClients);
-      if (error) console.error("Error insert clients", error);
+      const { error } = await supabase.from('clients').upsert(cloudClients);
+      if (error) console.error("Error upsert clients", error);
     }
     if (safeCloudTransactions.length > 0) {
-      const { error } = await supabase.from('transactions').insert(safeCloudTransactions);
-      if (error) console.error("Error insert transactions", error);
+      const { error } = await supabase.from('transactions').upsert(safeCloudTransactions);
+      if (error) console.error("Error upsert transactions", error);
     }
     
     console.log("☁️  Respaldo exitoso en Supabase");
@@ -94,12 +89,9 @@ export async function syncFromCloud(userId: string) {
     }));
     
     if (localClients.length > 0 || localTrans.length > 0) {
-        // Limpiamos la base local y restauramos desde la nube
-        await db.clients.clear();
-        await db.transactions.clear();
-        
-        if (localClients.length > 0) await db.clients.bulkAdd(localClients);
-        if (localTrans.length > 0) await db.transactions.bulkAdd(localTrans);
+        // Actualizamos la base local sin borrar para preservar datos
+        if (localClients.length > 0) await db.clients.bulkPut(localClients);
+        if (localTrans.length > 0) await db.transactions.bulkPut(localTrans);
         
         console.log("📱 Restauración exitosa desde Supabase a Dexie");
     }
