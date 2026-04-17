@@ -67,9 +67,15 @@ export default function Configuracion({ theme, toggleTheme }: Props) {
     const rate = parseFloat(bcvRate.replace(',', '.'));
     if (isNaN(rate) || rate <= 0) return;
 
-    const currentSettings = await db.settings.get('config') || { id: 'config' };
+    const currentSettings = await db.settings.get('config');
+    const safeSettings = currentSettings || {
+      id: 'config',
+      currentBcvRate: rate,
+      lastUpdated: new Date().toISOString()
+    };
+    
     await db.settings.put({
-      ...currentSettings,
+      ...safeSettings,
       id: 'config',
       currentBcvRate: rate,
       lastUpdated: new Date().toISOString()
@@ -84,9 +90,15 @@ export default function Configuracion({ theme, toggleTheme }: Props) {
 
   const handleSaveWa = async (e: React.FormEvent) => {
     e.preventDefault();
-    const currentSettings = await db.settings.get('config') || { id: 'config' };
+    const currentSettings = await db.settings.get('config');
+    const safeSettings = currentSettings || {
+      id: 'config',
+      currentBcvRate: 1,
+      lastUpdated: new Date().toISOString()
+    };
+
     await db.settings.put({
-      ...currentSettings,
+      ...safeSettings,
       id: 'config',
       whatsappGreeting: waGreeting.trim()
     });
