@@ -115,7 +115,7 @@ export default function ClienteDetalle() {
     const debtBs = formatBs(balance * (settings.currentBcvRate || 1));
     const rate = formatBs(settings.currentBcvRate || 1);
     
-    const message = `${greeting}\n\nNotificación de cobro: tienes un saldo pendiente de *$${debtUsd}* (Aprox. ${debtBs} Bs a la tasa de hoy de ${rate}).\n\n¡Por favor, avísame cuando tengas oportunidad de cancelarlo!`;
+    const message = `${greeting}\n\nNotificación de cobro: tienes un saldo pendiente de *$${debtUsd}* (${debtBs} Bs a la tasa de hoy de ${rate}).\n\n¡Por favor, avísame cuando tengas oportunidad de cancelarlo!`;
     const phoneNum = client.phone ? client.phone.replace(/\D/g, '') : '';
     
     if (!phoneNum) {
