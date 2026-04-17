@@ -107,15 +107,16 @@ function BottomNav() {
       display: 'flex',
       justifyContent: 'space-around',
       padding: '0.6rem 0.5rem',
-      boxShadow: '0 10px 40px var(--shadow-glass)'
+      boxShadow: '0 10px 40px var(--shadow-glass)',
+      zIndex: 50
     }}>
       <Link to="/" className={`nav-pill ${location.pathname === '/' ? 'nav-active' : ''}`} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textDecoration: 'none', color: 'inherit' }}>
         <Home size={22} strokeWidth={location.pathname === '/' ? 2.5 : 2} />
-        <span style={{ fontSize: '0.65rem', fontWeight: location.pathname === '/' ? 700 : 500, marginTop: '4px' }}>Fiadoapp</span>
+        <span style={{ fontSize: '0.65rem', fontWeight: location.pathname === '/' ? 700 : 500, marginTop: '4px' }}>Inicio</span>
       </Link>
       <Link to="/clientes" className={`nav-pill ${location.pathname === '/clientes' ? 'nav-active' : ''}`} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textDecoration: 'none', color: 'inherit' }}>
         <Users size={22} strokeWidth={location.pathname === '/clientes' ? 2.5 : 2} />
-        <span style={{ fontSize: '0.65rem', fontWeight: location.pathname === '/clientes' ? 700 : 500, marginTop: '4px' }}>Vecinos</span>
+        <span style={{ fontSize: '0.65rem', fontWeight: location.pathname === '/clientes' ? 700 : 500, marginTop: '4px' }}>Clientes</span>
       </Link>
       <Link to="/config" className={`nav-pill ${location.pathname === '/config' ? 'nav-active' : ''}`} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textDecoration: 'none', color: 'inherit' }}>
         <Settings size={22} strokeWidth={location.pathname === '/config' ? 2.5 : 2} />

@@ -53,7 +53,7 @@ export default function Clientes() {
     <>
       <div className="animate-slide-up">
         <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Vecinos</h1>
+        <h1 className="text-2xl font-bold">Clientes</h1>
         <button className="btn btn-primary" onClick={() => setShowAddModal(true)} style={{ width: 'auto', padding: '0.75rem' }}>
           <UserPlus size={22} />
         </button>
@@ -71,7 +71,7 @@ export default function Clientes() {
         <Search size={20} className="text-secondary" />
         <input 
           type="text" 
-          placeholder="Buscar vecino..." 
+          placeholder="Buscar cliente..." 
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           style={{ 
@@ -86,7 +86,7 @@ export default function Clientes() {
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.5rem' }}>
-        {clients?.length === 0 && <p className="text-center text-secondary py-6">No hay vecinos registrados</p>}
+        {clients?.length === 0 && <p className="text-center text-secondary py-6">No hay clientes registrados</p>}
         {clients?.map((client) => {
           const balance = getBalance(client.id);
           return (
@@ -123,7 +123,7 @@ export default function Clientes() {
           zIndex: 100, padding: '1rem'
         }}>
           <div className="card animate-slide-up" style={{ width: '100%', maxWidth: '400px', background: 'var(--bg-surface)' }}>
-            <h2 className="text-xl mb-4 font-bold">Nuevo Vecino</h2>
+            <h2 className="text-xl mb-4 font-bold">Nuevo Cliente</h2>
             <form onSubmit={handleAddClient}>
               <div className="input-group">
                 <label className="input-label">Nombre o Apodo *</label>

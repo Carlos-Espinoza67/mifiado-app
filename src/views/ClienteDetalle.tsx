@@ -108,9 +108,14 @@ export default function ClienteDetalle() {
           </button>
           <h1 style={{ fontSize: '1.4rem' }}>{client.name}</h1>
         </div>
-        <button onClick={() => setIsEditing(true)} className="btn" style={{ width: 'auto', padding: '0.6rem', background: 'transparent', color: 'var(--accent)', fontWeight: 700, fontSize: '1.1rem', border: 'none', boxShadow: 'none' }}>
-          Editar
-        </button>
+        <div className="flex items-center gap-1">
+          <button onClick={() => setClientDeleteConfirm(true)} className="btn" style={{ width: 'auto', padding: '0.6rem', background: 'transparent', color: 'var(--danger)', fontSize: '1.1rem', border: 'none', boxShadow: 'none' }}>
+            <Trash2 size={22} />
+          </button>
+          <button onClick={() => setIsEditing(true)} className="btn" style={{ width: 'auto', padding: '0.6rem', background: 'transparent', color: 'var(--accent)', fontWeight: 700, fontSize: '1.1rem', border: 'none', boxShadow: 'none' }}>
+            Editar
+          </button>
+        </div>
       </div>
 
       <div className="card mb-4" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: '1.25rem' }}>
@@ -257,7 +262,7 @@ export default function ClienteDetalle() {
           zIndex: 100, padding: '1rem'
         }}>
           <div className="card animate-slide-up" style={{ width: '100%', maxWidth: '400px', background: 'var(--bg-surface)' }}>
-            <h2 className="text-xl mb-4 font-bold">Editar Vecino</h2>
+            <h2 className="text-xl mb-4 font-bold">Editar Cliente</h2>
             <form onSubmit={handleEditClient}>
               <div className="input-group">
                 <label className="input-label">Nombre o Apodo *</label>
@@ -277,12 +282,7 @@ export default function ClienteDetalle() {
                 </button>
               </div>
 
-              <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '1.5rem', marginTop: '0.5rem' }}>
-                <button type="button" onClick={() => { setIsEditing(false); setClientDeleteConfirm(true); }} className="btn" style={{ background: 'var(--danger-soft)', color: 'var(--danger)', width: '100%', padding: '0.85rem' }}>
-                  Eliminar Vecino
-                </button>
-              </div>
-            </form>
+              </form>
           </div>
         </div>
       )}
@@ -303,7 +303,7 @@ export default function ClienteDetalle() {
                <>
                  <h2 style={{ color: 'var(--danger)', marginBottom: '0.6rem', fontWeight: 800 }}>¡ATENCIÓN! Deuda Pendiente</h2>
                  <p className="text-sm mb-6 font-bold text-secondary">
-                   Este vecino aún te debe <span className="text-danger">${formatUsd(balance)}</span>. 
+                   Este cliente aún te debe <span className="text-danger">${formatUsd(balance)}</span>. 
                    Si lo borras ahora, <strong className="text-primary">TODO su historial será eliminado permanentemente</strong> y desaparecerá de tus balances. ¿Estás absolutamente seguro?
                  </p>
                </>

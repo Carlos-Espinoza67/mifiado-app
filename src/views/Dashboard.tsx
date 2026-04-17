@@ -77,7 +77,7 @@ export default function Dashboard() {
           <span className="font-bold" style={{ fontSize: '0.8rem' }}>Cobrar</span>
         </Link>
         <div className="card cursor-pointer" onClick={() => navigate('/clientes')} style={{ padding: '0.85rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', margin: 0, border: 'none' }}>
-          <p className="text-secondary mb-1 font-bold" style={{ fontSize: '0.75rem', letterSpacing: '0.02em', textTransform: 'uppercase' }}>Vecinos</p>
+          <p className="text-secondary mb-1 font-bold" style={{ fontSize: '0.75rem', letterSpacing: '0.02em', textTransform: 'uppercase' }}>Clientes</p>
           <p className="font-heavy" style={{ fontSize: '1.25rem', color: 'var(--text-primary)' }}>{clientsRaw?.length ?? 0}</p>
         </div>
         <div className="card cursor-pointer" onClick={() => navigate('/config')} style={{ padding: '0.85rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', margin: 0, border: 'none' }}>
