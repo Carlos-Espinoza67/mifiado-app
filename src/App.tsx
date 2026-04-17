@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom'
-import { Home, Users, Settings } from 'lucide-react'
+import { Home, Users, Settings, Package } from 'lucide-react'
 import { supabase } from './supabase'
 import { syncFromCloud, syncToCloud } from './sync'
 
@@ -10,6 +10,7 @@ import Clientes from './views/Clientes'
 import ClienteDetalle from './views/ClienteDetalle'
 import NuevaTransaccion from './views/NuevaTransaccion'
 import Configuracion from './views/Configuracion'
+import Inventario from './views/Inventario'
 import Auth from './views/Auth'
 
 function App() {
@@ -74,6 +75,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/clientes" element={<Clientes />} />
+          <Route path="/inventario" element={<Inventario />} />
           <Route path="/cliente/:id" element={<ClienteDetalle />} />
           <Route path="/transaccion/nueva" element={<NuevaTransaccion />} />
           <Route path="/config" element={<Configuracion theme={theme} toggleTheme={toggleTheme} />} />
@@ -117,6 +119,10 @@ function BottomNav() {
       <Link to="/clientes" className={`nav-pill ${location.pathname === '/clientes' ? 'nav-active' : ''}`} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textDecoration: 'none', color: 'inherit' }}>
         <Users size={22} strokeWidth={location.pathname === '/clientes' ? 2.5 : 2} />
         <span style={{ fontSize: '0.65rem', fontWeight: location.pathname === '/clientes' ? 700 : 500, marginTop: '4px' }}>Clientes</span>
+      </Link>
+      <Link to="/inventario" className={`nav-pill ${location.pathname === '/inventario' ? 'nav-active' : ''}`} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textDecoration: 'none', color: 'inherit' }}>
+        <Package size={22} strokeWidth={location.pathname === '/inventario' ? 2.5 : 2} />
+        <span style={{ fontSize: '0.65rem', fontWeight: location.pathname === '/inventario' ? 700 : 500, marginTop: '4px' }}>Inventario</span>
       </Link>
       <Link to="/config" className={`nav-pill ${location.pathname === '/config' ? 'nav-active' : ''}`} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textDecoration: 'none', color: 'inherit' }}>
         <Settings size={22} strokeWidth={location.pathname === '/config' ? 2.5 : 2} />

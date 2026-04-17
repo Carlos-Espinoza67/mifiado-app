@@ -7,6 +7,15 @@ export interface Client {
   createdAt: string; // ISO string
 }
 
+export interface Product {
+  id: string; // UUID
+  name: string;
+  priceUsd: number;
+  stock: number;
+  minStockAlert: number;
+  createdAt: string; // ISO string
+}
+
 export interface Transaction {
   id: string; // UUID
   clientId: string;
@@ -19,6 +28,7 @@ export interface Transaction {
   linkedDebtId?: string; // Abono asociado a una deuda específica
   paymentMethod?: 'efectivo' | 'punto' | 'pagomovil';
   reference?: string;
+  items?: { productId: string, quantity: number, priceUsd: number, name: string }[]; // Para deudas detalladas por productos
 }
 
 export interface AppSettings {
@@ -32,13 +42,17 @@ export class BodegaDB extends Dexie {
   clients!: Table<Client, string>;
   transactions!: Table<Transaction, string>;
   settings!: Table<AppSettings, string>;
+  products!: Table<Product, string>;
 
   constructor() {
     super('BodegaDB');
-    this.version(1).stores({
+    this.version(2).stores({
       clients: 'id, name',
       transactions: 'id, clientId, type, createdAt',
-      settings: 'id'
+      settings: 'id',
+      products: 'id, name, stock'
+    }).upgrade(trans => {
+      // Data migration is automatic, but we increase version to apply schema changes
     });
   }
 }

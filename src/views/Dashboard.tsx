@@ -1,6 +1,6 @@
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "../db";
-import { PlusCircle, ArrowDownCircle, ChevronRight, Wallet, ArrowUpRight } from "lucide-react";
+import { PlusCircle, ArrowDownCircle, ChevronRight, Wallet, ArrowUpRight, AlertTriangle } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { formatBs, formatUsd } from "../utils";
 
@@ -9,6 +9,7 @@ export default function Dashboard() {
   const settings = useLiveQuery(() => db.settings.get('config'));
   const transactionsRaw = useLiveQuery(() => db.transactions.toArray());
   const clientsRaw = useLiveQuery(() => db.clients.toArray());
+  const productsRaw = useLiveQuery(() => db.products.toArray());
 
   const bcvRate = settings?.currentBcvRate || 0;
   
@@ -33,6 +34,8 @@ export default function Dashboard() {
     return { ...client, balance };
   }).filter(c => c.balance > 0.00).sort((a,b) => b.balance - a.balance);
 
+  const lowStockProducts = productsRaw?.filter(p => p.stock <= p.minStockAlert) || [];
+
   return (
     <div className="animate-slide-up pb-12">
       <h1 className="mb-4 font-heavy" style={{ 
@@ -44,6 +47,19 @@ export default function Dashboard() {
         letterSpacing: '-0.02em',
         marginTop: '0.5rem'
       }}>Fiadoapp</h1>
+
+      {lowStockProducts.length > 0 && (
+        <div onClick={() => navigate('/inventario')} className="card mb-4 cursor-pointer" style={{ background: 'var(--danger-soft)', borderColor: 'var(--danger)', borderWidth: '2px', borderStyle: 'solid', padding: '0.8rem 1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '0 0 1rem 0' }}>
+           <div className="flex items-center gap-3">
+             <AlertTriangle className="text-danger" size={24} />
+             <div>
+               <p className="font-bold text-danger text-sm">Alerta de Inventario</p>
+               <p className="text-xs text-danger font-medium">Hay {lowStockProducts.length} producto(s) por agotarse.</p>
+             </div>
+           </div>
+           <ChevronRight className="text-danger" size={20} />
+        </div>
+      )}
       
       <div className="card mb-6" style={{ 
         background: 'var(--card-gradient)', 

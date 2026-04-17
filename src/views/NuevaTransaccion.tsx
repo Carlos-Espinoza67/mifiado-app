@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate, Link } from "react-router-dom";
 import { useLiveQuery } from "dexie-react-hooks";
-import { db, generateId } from "../db";
-import { ArrowLeft, CheckCircle2, Home, CreditCard, Banknote, Smartphone, Wallet } from "lucide-react";
+import { db, generateId, Product } from "../db";
+import { ArrowLeft, CheckCircle2, Home, CreditCard, Banknote, Smartphone, Wallet, Package, Plus, Minus } from "lucide-react";
 import { formatBs, formatUsd } from "../utils";
 
 export default function NuevaTransaccion() {
@@ -23,8 +23,24 @@ export default function NuevaTransaccion() {
   const [selectedDebtId, setSelectedDebtId] = useState<string | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<'efectivo' | 'punto' | 'pagomovil' | "">("");
   const [reference, setReference] = useState("");
+  const [reference, setReference] = useState("");
+
+  const products = useLiveQuery(() => db.products.toArray());
+  const [cartItems, setCartItems] = useState<{product: Product, quantity: number}[]>([]);
+  const [showProductSelect, setShowProductSelect] = useState(false);
 
   const bcvRate = settings?.currentBcvRate || 0;
+
+  useEffect(() => {
+    if (cartItems.length > 0) {
+      const totalUsd = cartItems.reduce((acc, item) => acc + (item.product.priceUsd * item.quantity), 0);
+      setCurrency('USD');
+      setAmountInput(totalUsd.toFixed(2));
+      
+      const itemNames = cartItems.map(i => `${i.product.name} x${i.quantity}`).join(', ');
+      setConcept(itemNames);
+    }
+  }, [cartItems]);
 
   useEffect(() => {
     if (preSelectedClient) setClientId(preSelectedClient);
@@ -87,6 +103,10 @@ export default function NuevaTransaccion() {
       amountUsd = parseFloat((inputNumber / bcvRate).toFixed(2));
     }
 
+    const finalItems = isDeuda && cartItems.length > 0 
+      ? cartItems.map(ci => ({ productId: ci.product.id, name: ci.product.name, priceUsd: ci.product.priceUsd, quantity: ci.quantity })) 
+      : undefined;
+
     await db.transactions.add({
       id: generateId(),
       clientId,
@@ -99,7 +119,18 @@ export default function NuevaTransaccion() {
       linkedDebtId: (type === 'abono' && selectedDebtId) ? selectedDebtId : undefined,
       paymentMethod: type === 'abono' ? (paymentMethod as any) : undefined,
       reference: type === 'abono' ? reference : undefined,
+      items: finalItems
     });
+
+    if (finalItems) {
+      // Descontar inventario
+      for (const item of finalItems) {
+         const p = await db.products.get(item.productId);
+         if (p) {
+           await db.products.update(p.id, { stock: p.stock - item.quantity });
+         }
+      }
+    }
 
     navigate(preSelectedClient ? `/cliente/${clientId}` : '/');
   };
@@ -247,6 +278,72 @@ export default function NuevaTransaccion() {
             </div>
           )}
 
+          {isDeuda && (
+            <div className="mt-4 mb-4">
+               <div className="flex justify-between items-center mb-2">
+                 <label className="input-label block">Productos Fiados (Opcional)</label>
+                 <button type="button" onClick={() => setShowProductSelect(!showProductSelect)} className="text-accent flex items-center gap-1 text-sm font-bold">
+                    <Plus size={16} /> Añadir
+                 </button>
+               </div>
+               
+               {showProductSelect && (
+                 <div className="card mb-3 p-3 bg-main border-accent border-2">
+                    <p className="text-secondary text-sm font-bold mb-2">Selecciona disponibles:</p>
+                    <div className="flex flex-col gap-2 max-h-40 overflow-y-auto">
+                       {products?.length === 0 && <p className="text-sm">No hay productos en inventario.</p>}
+                       {products?.filter(p => p.stock > 0).map(p => (
+                          <div key={p.id} className="flex justify-between items-center border-b pb-2 mb-2" style={{ borderColor: 'var(--border-color)' }}>
+                             <div className="flex flex-col">
+                               <span className="font-bold text-sm">{p.name}</span>
+                               <span className="text-accent font-bold text-xs">${formatUsd(p.priceUsd)} • Stock: {p.stock}</span>
+                             </div>
+                             <button type="button" onClick={() => {
+                               setCartItems(prev => {
+                                 const exists = prev.find(i => i.product.id === p.id);
+                                 if (exists) {
+                                  if (exists.quantity >= p.stock) return prev;
+                                  return prev.map(i => i.product.id === p.id ? {...i, quantity: i.quantity + 1} : i);
+                                 }
+                                 return [...prev, {product: p, quantity: 1}];
+                               });
+                             }} className="btn btn-primary px-3 py-1 bg-accent text-white rounded-md" style={{ width: 'auto', minHeight: 'auto' }}>
+                               Agregar
+                             </button>
+                          </div>
+                       ))}
+                    </div>
+                 </div>
+               )}
+
+               {cartItems.length > 0 && (
+                 <div className="bg-surface rounded-xl p-3 border border-color">
+                    {cartItems.map(item => (
+                       <div key={item.product.id} className="flex justify-between items-center py-2">
+                          <div className="flex-1">
+                             <div className="font-bold text-sm">{item.product.name}</div>
+                             <div className="text-xs text-secondary">${formatUsd(item.product.priceUsd)} / und</div>
+                          </div>
+                          <div className="flex items-center gap-3">
+                             <button type="button" onClick={() => setCartItems(prev => {
+                               const obj = prev.find(i => i.product.id === item.product.id);
+                               if (obj && obj.quantity > 1) return prev.map(i => i.product.id === obj.product.id ? {...i, quantity: i.quantity - 1} : i);
+                               return prev.filter(i => i.product.id !== item.product.id);
+                             })} className="text-danger p-1 rounded-full"><Minus size={16} /></button>
+                             <span className="font-bold">{item.quantity}</span>
+                             <button type="button" onClick={() => setCartItems(prev => {
+                                const obj = prev.find(i => i.product.id === item.product.id);
+                                if (obj && obj.quantity < item.product.stock) return prev.map(i => i.product.id === obj.product.id ? {...i, quantity: i.quantity + 1} : i);
+                                return prev;
+                             })} className="text-success p-1 rounded-full"><Plus size={16} /></button>
+                          </div>
+                       </div>
+                    ))}
+                 </div>
+               )}
+            </div>
+          )}
+
           <div className="flex gap-2 w-full mt-6">
              <div className="input-group" style={{ flex: 1 }}>
                <label className="input-label">Moneda</label>
@@ -267,9 +364,13 @@ export default function NuevaTransaccion() {
                  className="input-field" 
                  placeholder="Ej. 10.00"
                  value={amountInput}
-                 onChange={e => setAmountInput(e.target.value)}
+                 onChange={e => {
+                   if (cartItems.length > 0) return; // Prevent manual change if using cart
+                   setAmountInput(e.target.value);
+                 }}
                  required
-                 style={{ borderRadius: '0 var(--radius-md) var(--radius-md) 0', fontSize: '1.25rem', fontWeight: 800, color: 'var(--accent)' }}
+                 readOnly={cartItems.length > 0}
+                 style={{ borderRadius: '0 var(--radius-md) var(--radius-md) 0', fontSize: '1.25rem', fontWeight: 800, color: cartItems.length > 0 ? 'var(--text-secondary)' : 'var(--accent)' }}
                  autoFocus
                />
              </div>
