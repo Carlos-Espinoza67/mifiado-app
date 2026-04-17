@@ -94,7 +94,7 @@ function BottomNav() {
   return (
     <nav style={{
       position: 'fixed',
-      bottom: '1.5rem',
+      bottom: 'max(1.5rem, env(safe-area-inset-bottom))',
       left: '50%',
       transform: 'translateX(-50%)',
       width: 'calc(100% - 3rem)',

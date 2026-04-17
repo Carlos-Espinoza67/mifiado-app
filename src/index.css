@@ -75,7 +75,8 @@ body {
   max-width: 500px;
   margin: 0 auto;
   padding: 1.5rem;
-  padding-bottom: 7.5rem;
+  padding-top: max(2rem, env(safe-area-inset-top));
+  padding-bottom: max(7.5rem, env(safe-area-inset-bottom));
   min-height: 100vh;
 }
 
