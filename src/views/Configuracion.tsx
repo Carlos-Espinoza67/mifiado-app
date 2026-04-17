@@ -50,28 +50,51 @@ export default function Configuracion({ theme, toggleTheme }: Props) {
 
   useEffect(() => {
     fetchOnlineRate();
-    if (settings) {
+  }, []); // Run fetch once on mount
+
+  // Sync settings into state only once when settings successfully loads to avoid resetting when typing
+  const [initLoaded, setInitLoaded] = useState(false);
+  useEffect(() => {
+    if (settings && !initLoaded) {
       if (settings.currentBcvRate) setBcvRate(settings.currentBcvRate.toString());
       if (settings.whatsappGreeting) setWaGreeting(settings.whatsappGreeting);
+      setInitLoaded(true);
     }
-  }, [settings?.lastUpdated]);
+  }, [settings, initLoaded]);
 
-  const handleSave = async (e: React.FormEvent) => {
+  const handleSaveRate = async (e: React.FormEvent) => {
     e.preventDefault();
     const rate = parseFloat(bcvRate.replace(',', '.'));
     if (isNaN(rate) || rate <= 0) return;
 
+    const currentSettings = await db.settings.get('config') || { id: 'config' };
     await db.settings.put({
+      ...currentSettings,
       id: 'config',
       currentBcvRate: rate,
-      whatsappGreeting: waGreeting.trim(),
       lastUpdated: new Date().toISOString()
     });
     
-    const btn = document.getElementById('btn-save');
+    const btn = document.getElementById('btn-save-rate');
     if(btn) {
       btn.innerHTML = '¡Guardado!';
       setTimeout(() => btn.innerHTML = 'Guardar Tasa Manual', 2000);
+    }
+  };
+
+  const handleSaveWa = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const currentSettings = await db.settings.get('config') || { id: 'config' };
+    await db.settings.put({
+      ...currentSettings,
+      id: 'config',
+      whatsappGreeting: waGreeting.trim()
+    });
+    
+    const btn = document.getElementById('btn-save-wa');
+    if(btn) {
+      btn.innerHTML = '¡Guardado!';
+      setTimeout(() => btn.innerHTML = 'Guardar Plantilla', 2000);
     }
   };
 
@@ -123,7 +146,7 @@ export default function Configuracion({ theme, toggleTheme }: Props) {
             </div>
           )}
 
-          <form onSubmit={handleSave}>
+          <form onSubmit={handleSaveRate}>
             <div className="input-group">
               <label className="input-label">Bolívares por Dólar (Bs/$)</label>
               <input 
@@ -133,8 +156,20 @@ export default function Configuracion({ theme, toggleTheme }: Props) {
               />
             </div>
             
+            <p className="text-sm mb-4 text-center text-secondary">
+              Última actualización de la tasa: {settings?.lastUpdated ? new Date(settings.lastUpdated).toLocaleString('es-VE') : '---'}
+            </p>
+            <button id="btn-save-rate" type="submit" className="btn btn-primary">
+              Guardar Tasa
+            </button>
+          </form>
+      </div>
+
+      <div className="card mb-6" style={{ padding: '1rem' }}>
+        <h2 className="mb-4" style={{ fontSize: '1.1rem' }}>Mensaje para WhatsApp</h2>
+        <form onSubmit={handleSaveWa}>
             <div className="input-group mb-4">
-              <label className="input-label">Saludo para WhatsApp</label>
+              <label className="input-label">Plantilla de Saludo</label>
               <textarea 
                 className="input-field" 
                 value={waGreeting} onChange={e => setWaGreeting(e.target.value)} 
@@ -142,16 +177,15 @@ export default function Configuracion({ theme, toggleTheme }: Props) {
                 placeholder="Ejemplo: Hola soy Pepe..."
                 style={{ width: '100%', resize: 'none' }}
               />
-              <p className="text-sm mt-1 text-secondary" style={{ fontSize: '0.75rem' }}>El monto y la tasa de hoy se agregarán automáticamente.</p>
+              <p className="text-sm mt-2 text-secondary" style={{ fontSize: '0.75rem', lineHeight: '1.5' }}>
+                Tu saludo irá al inicio. El sistema luego agregará un texto fijo informándole al cliente la deuda en $ y su cálculo respectivo en Bolívares usando la tasa del día.
+              </p>
             </div>
             
-            <p className="text-sm mb-4 text-center">
-              Última actualización de la tasa: {settings?.lastUpdated ? new Date(settings.lastUpdated).toLocaleString('es-VE') : '---'}
-            </p>
-            <button id="btn-save" type="submit" className="btn btn-primary">
-              Guardar Tasa
+            <button id="btn-save-wa" type="submit" className="btn btn-primary">
+              Guardar Plantilla
             </button>
-          </form>
+        </form>
       </div>
       <div className="card mb-6" style={{ padding: '1rem', border: '1px solid var(--danger-soft)', background: 'transparent' }}>
         <h2 className="mb-2 text-danger" style={{ fontSize: '1.1rem' }}>Cuenta</h2>
