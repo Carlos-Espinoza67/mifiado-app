@@ -37,11 +37,18 @@ export default function ClienteDetalle() {
 
   const handleDeleteClient = async () => {
     await db.transactions.where({ clientId: id }).delete();
-    await db.clients.delete(id!);
     if (navigator.onLine) {
-        await supabase.from('transactions').delete().eq('client_id', id);
-        await supabase.from('clients').delete().eq('id', id);
+        const { error: errTrans } = await supabase.from('transactions').delete().eq('client_id', id);
+        const { error: errClient } = await supabase.from('clients').delete().eq('id', id);
+        
+        if (errTrans || errClient) {
+            alert(`⚠️ Error en la nube: No se pudo borrar el cliente del servidor. Posiblemente requieras habilitar la política RLS de DELETE en Supabase.\nDetalle: ${errClient?.message || errTrans?.message}`);
+            return;
+        }
     }
+    
+    // Si llegamos hasta aquí, la nube fue un éxito (o estamos offline)
+    await db.clients.delete(id!);
     navigate("/clientes");
   };
 
@@ -57,7 +64,10 @@ export default function ClienteDetalle() {
     if (deleteConfirmId) {
       await db.transactions.delete(deleteConfirmId);
       if (navigator.onLine) {
-        await supabase.from('transactions').delete().eq('id', deleteConfirmId);
+        const { error } = await supabase.from('transactions').delete().eq('id', deleteConfirmId);
+        if (error) {
+            alert(`⚠️ Error en la nube al borrar la transacción:\n${error.message}`);
+        }
       }
       setDeleteConfirmId(null);
     }
