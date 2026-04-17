@@ -62,9 +62,15 @@ export default function NuevaTransaccion() {
       return;
     }
 
-    if (type === 'abono' && pendingDebts.length > 0 && !selectedDebtId) {
-      alert("Debes seleccionar a cuál cuenta pendiente abonar.");
-      return;
+    if (type === 'abono') {
+      if (pendingDebts.length === 0) {
+        alert("El vecino seleccionado no tiene deudas pendientes.");
+        return;
+      }
+      if (!selectedDebtId) {
+        alert("Debes seleccionar a cuál cuenta pendiente abonar.");
+        return;
+      }
     }
 
     const inputNumber = parseFloat(amountInput.replace(',', '.'));
@@ -145,6 +151,13 @@ export default function NuevaTransaccion() {
               {clients?.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
           </div>
+
+          {clientId && !isDeuda && pendingDebts.length === 0 && (
+            <div className="text-center card mt-4 mb-4" style={{ padding: '1.5rem', background: 'var(--danger-soft)', borderColor: 'var(--danger)', borderWidth: '2px', borderStyle: 'solid' }}>
+              <p className="font-heavy text-danger" style={{ fontSize: '1.2rem' }}>¡Sin deudas!</p>
+              <p className="font-bold text-danger text-sm mt-1">Este vecino no tiene cuentas pendientes que cobrar.</p>
+            </div>
+          )}
 
           {!isDeuda && (
             <div className="mt-4 mb-4">
@@ -282,7 +295,18 @@ export default function NuevaTransaccion() {
             />
           </div>
 
-          <button type="submit" className="btn btn-primary" style={{ padding: '1rem', borderRadius: '14px', marginTop: '1rem' }}>
+          <button 
+            type="submit" 
+            className="btn btn-primary" 
+            style={{ 
+              padding: '1rem', 
+              borderRadius: '14px', 
+              marginTop: '1rem',
+              opacity: (clientId && !isDeuda && pendingDebts.length === 0) ? 0.5 : 1,
+              cursor: (clientId && !isDeuda && pendingDebts.length === 0) ? 'not-allowed' : 'pointer'
+            }}
+            disabled={clientId && !isDeuda && pendingDebts.length === 0 ? true : false}
+          >
             <Wallet size={20} />
             {isDeuda ? 'Guardar Fiado' : 'Registrar Pago'}
           </button>

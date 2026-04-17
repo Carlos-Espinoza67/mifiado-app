@@ -135,9 +135,15 @@ export default function ClienteDetalle() {
         <Link to={`/transaccion/nueva?tipo=deuda&cliente=${client.id}`} className="btn btn-primary" style={{ flex: 1, textDecoration: 'none', background: 'var(--danger)', color: 'white' }}>
            Fiar
         </Link>
-        <Link to={`/transaccion/nueva?tipo=abono&cliente=${client.id}`} className="btn btn-primary" style={{ flex: 1, textDecoration: 'none', background: 'var(--success)', color: 'white' }}>
-           Cobrar
-        </Link>
+        {balance > 0 ? (
+          <Link to={`/transaccion/nueva?tipo=abono&cliente=${client.id}`} className="btn btn-primary" style={{ flex: 1, textDecoration: 'none', background: 'var(--success)', color: 'white' }}>
+             Cobrar
+          </Link>
+        ) : (
+          <button className="btn btn-primary" style={{ flex: 1, textDecoration: 'none', background: 'var(--success)', color: 'white', opacity: 0.5, cursor: 'not-allowed' }} disabled>
+             Cobrar
+          </button>
+        )}
       </div>
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
