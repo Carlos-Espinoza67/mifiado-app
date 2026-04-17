@@ -46,8 +46,9 @@ function App() {
     if (!session) return;
     const handleSync = async () => {
       if (!navigator.onLine) return;
-      await syncFromCloud(session.user.id);
+      // ALWAYS push local changes (like inventory deductions) FIRST so they aren't overwritten by old cloud data
       await syncToCloud(session.user.id);
+      await syncFromCloud(session.user.id);
     };
     
     window.addEventListener('visibilitychange', () => {

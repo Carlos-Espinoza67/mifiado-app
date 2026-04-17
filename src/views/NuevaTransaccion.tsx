@@ -39,6 +39,10 @@ export default function NuevaTransaccion() {
       
       const itemNames = cartItems.map(i => `${i.product.name} x${i.quantity}`).join(', ');
       setConcept(itemNames);
+    } else {
+      // Clear inputs if cart is emptied to avoid ghost values
+      setAmountInput("");
+      setConcept("");
     }
   }, [cartItems]);
 
