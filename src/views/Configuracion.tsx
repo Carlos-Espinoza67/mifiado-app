@@ -12,6 +12,7 @@ interface Props {
 export default function Configuracion({ theme, toggleTheme }: Props) {
   const settings = useLiveQuery(() => db.settings.get('config'));
   const [bcvRate, setBcvRate] = useState("");
+  const [waGreeting, setWaGreeting] = useState("Hola, te escribo de La Bodega.");
   const [fetchStatus, setFetchStatus] = useState<'idle' | 'fetching' | 'success' | 'error'>('idle');
 
   const fetchOnlineRate = async () => {
@@ -49,7 +50,11 @@ export default function Configuracion({ theme, toggleTheme }: Props) {
 
   useEffect(() => {
     fetchOnlineRate();
-  }, []);
+    if (settings) {
+      if (settings.currentBcvRate) setBcvRate(settings.currentBcvRate.toString());
+      if (settings.whatsappGreeting) setWaGreeting(settings.whatsappGreeting);
+    }
+  }, [settings?.lastUpdated]);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,6 +64,7 @@ export default function Configuracion({ theme, toggleTheme }: Props) {
     await db.settings.put({
       id: 'config',
       currentBcvRate: rate,
+      whatsappGreeting: waGreeting.trim(),
       lastUpdated: new Date().toISOString()
     });
     
@@ -126,8 +132,21 @@ export default function Configuracion({ theme, toggleTheme }: Props) {
                 style={{ fontSize: '1.25rem', fontWeight: 700 }}
               />
             </div>
+            
+            <div className="input-group mb-4">
+              <label className="input-label">Saludo para WhatsApp</label>
+              <textarea 
+                className="input-field" 
+                value={waGreeting} onChange={e => setWaGreeting(e.target.value)} 
+                rows={2}
+                placeholder="Ejemplo: Hola soy Pepe..."
+                style={{ width: '100%', resize: 'none' }}
+              />
+              <p className="text-sm mt-1 text-secondary" style={{ fontSize: '0.75rem' }}>El monto y la tasa de hoy se agregarán automáticamente.</p>
+            </div>
+            
             <p className="text-sm mb-4 text-center">
-              Última vez: {settings?.lastUpdated ? new Date(settings.lastUpdated).toLocaleString('es-VE') : '---'}
+              Última actualización de la tasa: {settings?.lastUpdated ? new Date(settings.lastUpdated).toLocaleString('es-VE') : '---'}
             </p>
             <button id="btn-save" type="submit" className="btn btn-primary">
               Guardar Tasa

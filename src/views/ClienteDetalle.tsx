@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "../db";
-import { ArrowLeft, User, PlusCircle, ArrowDownCircle, Trash2, CreditCard, Banknote, Smartphone } from "lucide-react";
+import { ArrowLeft, User, PlusCircle, ArrowDownCircle, Trash2, CreditCard, Banknote, Smartphone, MessageCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 import { formatBs, formatUsd } from "../utils";
 import { supabase } from "../supabase";
@@ -108,6 +108,33 @@ export default function ClienteDetalle() {
     document.body.style.overflow = 'auto';
   }
 
+  const handleSendWhatsapp = () => {
+    if (!settings || !client) return;
+    const greeting = settings.whatsappGreeting || "Hola, te escribo de La Bodega.";
+    const debtUsd = formatUsd(balance);
+    const debtBs = formatBs(balance * (settings.currentBcvRate || 1));
+    const rate = formatBs(settings.currentBcvRate || 1);
+    
+    const message = `${greeting}\n\nNotificación de cobro: tienes un saldo pendiente de *$${debtUsd}* (Aprox. ${debtBs} Bs a la tasa de hoy de ${rate}).\n\n¡Por favor, avísame cuando tengas oportunidad de cancelarlo!`;
+    const phoneNum = client.phone ? client.phone.replace(/\D/g, '') : '';
+    
+    if (!phoneNum) {
+      alert("Este cliente no tiene un número de teléfono registrado.");
+      return;
+    }
+    
+    // Asume el código local de Venezuela si no lo incluye
+    let finalPhone = phoneNum;
+    if (finalPhone.startsWith('0')) {
+      finalPhone = '58' + finalPhone.substring(1);
+    } else if (!finalPhone.startsWith('58')) {
+      finalPhone = '58' + finalPhone;
+    }
+    
+    const url = `https://wa.me/${finalPhone}?text=${encodeURIComponent(message)}`;
+    window.open(url, '_blank');
+  };
+
   return (
     <>
       <div className="animate-slide-up">
@@ -136,14 +163,20 @@ export default function ClienteDetalle() {
         <p className="text-sm font-bold uppercase" style={{ letterSpacing: '0.05em' }}>{client.phone || 'Sin número'}</p>
       </div>
       
-      <div className="card mb-6" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: '1.25rem' }}>
+      <div className="card mb-6" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: '1.25rem', position: 'relative' }}>
         <p className="text-secondary text-xs uppercase font-bold mb-1" style={{ letterSpacing: '0.1em' }}>Total Deuda</p>
         <h3 style={{ fontSize: '2.25rem', fontWeight: 800, color: balance > 0.00 ? 'var(--danger)' : 'var(--success)', margin: '0.25rem 0' }}>
           ${formatUsd(balance)}
         </h3>
-        <div className="text-sm font-bold" style={{ color: 'var(--text-secondary)' }}>
+        <div className="text-sm font-bold mb-3" style={{ color: 'var(--text-secondary)' }}>
            {formatBs(balance * (settings?.currentBcvRate || 0))} Bs
         </div>
+        
+        {balance > 0 && (
+          <button onClick={handleSendWhatsapp} className="btn" style={{ background: '#25D366', color: 'white', display: 'flex', alignItems: 'center', gap: '0.5rem', width: 'auto', padding: '0.5rem 1rem', borderRadius: 'var(--radius-full)', fontSize: '0.8rem', boxShadow: '0 4px 10px rgba(37, 211, 102, 0.3)' }}>
+            <MessageCircle size={16} /> Notificar Cobro
+          </button>
+        )}
       </div>
 
       <div className="flex gap-4 mb-8">

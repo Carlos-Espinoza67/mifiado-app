@@ -25,6 +25,7 @@ export interface AppSettings {
   id: string; // 'config'
   currentBcvRate: number;
   lastUpdated: string;
+  whatsappGreeting?: string;
 }
 
 export class BodegaDB extends Dexie {
