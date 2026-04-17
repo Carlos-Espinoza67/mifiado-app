@@ -131,8 +131,19 @@ export default function ClienteDetalle() {
       finalPhone = '58' + finalPhone;
     }
     
-    const url = `https://wa.me/${finalPhone}?text=${encodeURIComponent(message)}`;
-    window.open(url, '_blank');
+    // Utilizar el esquema whatsapp:// directamente previene el problema del navegador en blanco (SFSafariViewController) en las PWA de iOS
+    const url = `whatsapp://send?phone=${finalPhone}&text=${encodeURIComponent(message)}`;
+    
+    // Intenta abrir mediante asignación directa, lo cual el SO intercepta sin abrir una nueva pestaña en blanco
+    window.location.href = url;
+    
+    // Fallback silencioso por si falla en entornos web de escritorio
+    setTimeout(() => {
+        if (document.hasFocus()) {
+           // Si a los 2 segundos sigue en la pantalla, proveer el link wa.me alternativo en consola o silently use it
+           console.log("No se pudo iniciar WhatsApp nativo, verifica tener la app.");
+        }
+    }, 2000);
   };
 
   return (
