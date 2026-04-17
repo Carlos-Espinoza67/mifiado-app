@@ -51,7 +51,7 @@ export class BodegaDB extends Dexie {
       transactions: 'id, clientId, type, createdAt',
       settings: 'id',
       products: 'id, name, stock'
-    }).upgrade(trans => {
+    }).upgrade(() => {
       // Data migration is automatic, but we increase version to apply schema changes
     });
   }

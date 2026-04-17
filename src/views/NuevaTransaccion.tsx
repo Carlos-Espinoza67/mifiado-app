@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate, Link } from "react-router-dom";
 import { useLiveQuery } from "dexie-react-hooks";
-import { db, generateId, Product } from "../db";
-import { ArrowLeft, CheckCircle2, Home, CreditCard, Banknote, Smartphone, Wallet, Package, Plus, Minus } from "lucide-react";
+import type { Product } from "../db";
+import { db, generateId } from "../db";
+import { ArrowLeft, CheckCircle2, Home, CreditCard, Banknote, Smartphone, Wallet, Plus, Minus } from "lucide-react";
 import { formatBs, formatUsd } from "../utils";
 
 export default function NuevaTransaccion() {
@@ -22,7 +23,6 @@ export default function NuevaTransaccion() {
   const [concept, setConcept] = useState("");
   const [selectedDebtId, setSelectedDebtId] = useState<string | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<'efectivo' | 'punto' | 'pagomovil' | "">("");
-  const [reference, setReference] = useState("");
   const [reference, setReference] = useState("");
 
   const products = useLiveQuery(() => db.products.toArray());

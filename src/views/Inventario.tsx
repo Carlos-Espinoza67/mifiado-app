@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db, generateId } from "../db";
-import { Package, Search, PlusCircle, Trash2, Edit2, AlertTriangle } from "lucide-react";
+import { Search, PlusCircle, Trash2, Edit2, AlertTriangle } from "lucide-react";
 import { formatUsd } from "../utils";
 
 export default function Inventario() {
