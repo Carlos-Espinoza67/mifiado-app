@@ -69,7 +69,7 @@ export default function NuevaTransaccion() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!clientId) {
-      alert("Selecciona un vecino.");
+      alert("Selecciona un cliente.");
       return;
     }
     if (bcvRate === 0) {
@@ -84,7 +84,7 @@ export default function NuevaTransaccion() {
 
     if (type === 'abono') {
       if (pendingDebts.length === 0) {
-        alert("El vecino seleccionado no tiene deudas pendientes.");
+        alert("El cliente seleccionado no tiene deudas pendientes.");
         return;
       }
       if (selectedDebtIds.length === 0) {
@@ -226,7 +226,7 @@ export default function NuevaTransaccion() {
       <div className="card">
         <form onSubmit={handleSubmit}>
           <div className="input-group">
-            <label className="input-label">Vecino *</label>
+            <label className="input-label">Cliente *</label>
             <select 
               className="input-field" 
               value={clientId}
@@ -238,7 +238,7 @@ export default function NuevaTransaccion() {
               required
               style={{ fontWeight: 700 }}
             >
-              <option value="" disabled>Selecciona un vecino...</option>
+              <option value="" disabled>Selecciona un cliente...</option>
               {clients?.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
           </div>
@@ -246,7 +246,7 @@ export default function NuevaTransaccion() {
           {clientId && !isDeuda && pendingDebts.length === 0 && (
             <div className="text-center card mt-4 mb-4" style={{ padding: '1.5rem', background: 'var(--danger-soft)', borderColor: 'var(--danger)', borderWidth: '2px', borderStyle: 'solid' }}>
               <p className="font-heavy text-danger" style={{ fontSize: '1.2rem' }}>¡Sin deudas!</p>
-              <p className="font-bold text-danger text-sm mt-1">Este vecino no tiene cuentas pendientes que cobrar.</p>
+              <p className="font-bold text-danger text-sm mt-1">Este cliente no tiene cuentas pendientes que cobrar.</p>
             </div>
           )}
 
