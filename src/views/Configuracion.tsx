@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
-import { db } from "../db";
-import { RefreshCw, WifiOff, Moon, Sun, LogOut } from "lucide-react";
+import { db, generateId } from "../db";
+import { RefreshCw, WifiOff, Moon, Sun, LogOut, Download, Upload } from "lucide-react";
 import { supabase } from "../supabase";
 
 interface Props {
@@ -14,6 +14,8 @@ export default function Configuracion({ theme, toggleTheme }: Props) {
   const [bcvRate, setBcvRate] = useState("");
   const [waGreeting, setWaGreeting] = useState("Hola, te escribo de La Bodega.");
   const [fetchStatus, setFetchStatus] = useState<'idle' | 'fetching' | 'success' | 'error'>('idle');
+  const [importing, setImporting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const fetchOnlineRate = async () => {
     if (!navigator.onLine) {
@@ -110,6 +112,92 @@ export default function Configuracion({ theme, toggleTheme }: Props) {
     }
   };
 
+  const downloadTemplate = () => {
+    const csvContent = "Nombre,Telefono,MontoUSD,Concepto\nMaria,04121234567,15.50,Harina y Queso\nPedro,,0,\nJuan,04149876543,5.00,Deuda anterior";
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', 'plantilla_bodega.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setImporting(true);
+    const reader = new FileReader();
+    
+    reader.onload = async (event) => {
+      try {
+        const text = event.target?.result as string;
+        const rows = text.split('\n').map(row => row.trim()).filter(row => row.length > 0);
+        
+        // Assuming first line is header
+        const dataRows = rows.slice(1);
+        let importedCount = 0;
+        
+        const currentBcv = settings?.currentBcvRate || 1;
+
+        for (const row of dataRows) {
+          const columns = row.split(',').map(c => c.trim());
+          if (columns.length < 1) continue;
+          
+          const name = columns[0];
+          if (!name) continue;
+          
+          const phone = columns[1] || "";
+          const amountStr = columns[2] || "0";
+          const concept = columns[3] || "Saldo inicial importado";
+          
+          let amountUsd = parseFloat(amountStr.replace(',', '.'));
+          if (isNaN(amountUsd) || amountUsd < 0) amountUsd = 0;
+
+          // Find if client exists
+          let client = await db.clients.where('name').equalsIgnoreCase(name).first();
+          let clientId = client?.id;
+
+          if (!client) {
+            clientId = generateId();
+            await db.clients.add({
+               id: clientId,
+               name: name,
+               phone: phone,
+               createdAt: new Date().toISOString()
+            });
+          }
+
+          if (amountUsd > 0 && clientId) {
+             await db.transactions.add({
+               id: generateId(),
+               clientId: clientId,
+               type: 'deuda',
+               amountUsd: amountUsd,
+               amountBs: parseFloat((amountUsd * currentBcv).toFixed(2)),
+               concept: concept,
+               exchangeRate: currentBcv,
+               createdAt: new Date().toISOString()
+             });
+          }
+          importedCount++;
+        }
+        
+        alert(`¡Importación exitosa! Se procesaron ${importedCount} registros.`);
+      } catch (error) {
+        console.error("Error al importar", error);
+        alert("Ocurrió un error al leer el archivo. Asegúrate de que tenga el formato correcto.");
+      } finally {
+        setImporting(false);
+        if (fileInputRef.current) fileInputRef.current.value = "";
+      }
+    };
+    
+    reader.readAsText(file);
+  };
+
   return (
     <div className="animate-slide-up">
       <h1 className="mb-6">Ajustes</h1>
@@ -199,6 +287,45 @@ export default function Configuracion({ theme, toggleTheme }: Props) {
             </button>
         </form>
       </div>
+
+      <div className="card mb-6" style={{ padding: '1rem' }}>
+        <h2 className="mb-2" style={{ fontSize: '1.1rem' }}>Importar Datos</h2>
+        <p className="text-sm mb-4 text-secondary">
+          Migra tus cuentas del cuaderno físico fácilmente subiendo un archivo CSV con tus clientes y sus deudas iniciales.
+        </p>
+
+        <div className="flex gap-3 mt-4">
+           <button 
+             onClick={downloadTemplate}
+             className="btn btn-glass flex-1 flex-col gap-2 text-secondary"
+             style={{ padding: '0.85rem', borderRadius: '12px' }}
+           >
+             <Download size={20} />
+             <span style={{ fontSize: '0.75rem', fontWeight: 600 }}>1. Plantilla CSV</span>
+           </button>
+           
+           <input 
+             type="file" 
+             accept=".csv" 
+             ref={fileInputRef} 
+             style={{ display: 'none' }} 
+             onChange={handleFileUpload}
+           />
+           <button 
+             onClick={() => fileInputRef.current?.click()}
+             disabled={importing}
+             className="btn btn-primary flex-1 flex-col gap-2"
+             style={{ padding: '0.85rem', borderRadius: '12px', opacity: importing ? 0.7 : 1 }}
+           >
+             <Upload size={20} className={importing ? "animate-bounce" : ""} />
+             <span style={{ fontSize: '0.75rem', fontWeight: 600 }}>{importing ? "Importando..." : "2. Subir Archivo"}</span>
+           </button>
+        </div>
+        <p className="text-[0.7rem] text-secondary mt-3 text-center">
+           Nota: Formato Nombre, Telefono, MontoUSD, Concepto
+        </p>
+      </div>
+
       <div className="card mb-6" style={{ padding: '1rem', border: '1px solid var(--danger-soft)', background: 'transparent' }}>
         <h2 className="mb-2 text-danger" style={{ fontSize: '1.1rem' }}>Cuenta</h2>
         <p className="text-sm mb-4 text-secondary">Si cambias de dispositivo, asegúrate de haber estado conectado a internet para que se haya guardado tu último respaldo.</p>
