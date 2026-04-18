@@ -16,6 +16,8 @@ export default function Configuracion({ theme, toggleTheme }: Props) {
   const [fetchStatus, setFetchStatus] = useState<'idle' | 'fetching' | 'success' | 'error'>('idle');
   const [importing, setImporting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [importingInv, setImportingInv] = useState(false);
+  const invInputRef = useRef<HTMLInputElement>(null);
 
   const fetchOnlineRate = async () => {
     if (!navigator.onLine) {
@@ -198,6 +200,83 @@ export default function Configuracion({ theme, toggleTheme }: Props) {
     reader.readAsText(file);
   };
 
+  const downloadInventoryTemplate = () => {
+    const csvContent = "Nombre,PrecioUSD,Stock,AlertaMinima\nHarina Pan,1.20,20,5\nQueso Llanero(kg),4.50,10,2";
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', 'plantilla_inventario.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleInventoryUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setImportingInv(true);
+    const reader = new FileReader();
+    
+    reader.onload = async (event) => {
+      try {
+        const text = event.target?.result as string;
+        const rows = text.split('\n').map(row => row.trim()).filter(row => row.length > 0);
+        
+        const dataRows = rows.slice(1); // skip header
+        let importedCount = 0;
+
+        for (const row of dataRows) {
+          const columns = row.split(',').map(c => c.trim());
+          if (columns.length < 1) continue;
+          
+          const name = columns[0];
+          if (!name) continue;
+          
+          let priceUsd = parseFloat(columns[1]?.replace(',', '.') || "0");
+          if (isNaN(priceUsd) || priceUsd < 0) priceUsd = 0;
+
+          let stock = parseInt(columns[2] || "0", 10);
+          if (isNaN(stock) || stock < 0) stock = 0;
+
+          let minAlert = parseInt(columns[3] || "0", 10);
+          if (isNaN(minAlert) || minAlert < 0) minAlert = 0;
+
+          let existingProduct = await db.products.where('name').equalsIgnoreCase(name).first();
+
+          if (existingProduct) {
+             await db.products.update(existingProduct.id, {
+               priceUsd: priceUsd > 0 ? priceUsd : existingProduct.priceUsd,
+               stock: existingProduct.stock + stock,
+               minStockAlert: minAlert > 0 ? minAlert : existingProduct.minStockAlert
+             });
+          } else {
+             await db.products.add({
+               id: generateId(),
+               name: name,
+               priceUsd: priceUsd,
+               stock: stock,
+               minStockAlert: minAlert,
+               createdAt: new Date().toISOString()
+             });
+          }
+          importedCount++;
+        }
+        
+        alert(`¡Importación de inventario exitosa! Se procesaron ${importedCount} productos.`);
+      } catch (error) {
+        console.error("Error al importar inventario", error);
+        alert("Ocurrió un error al leer el archivo. Asegúrate de que tenga el formato correcto.");
+      } finally {
+        setImportingInv(false);
+        if (invInputRef.current) invInputRef.current.value = "";
+      }
+    };
+    reader.readAsText(file);
+  };
+
+
   return (
     <div className="animate-slide-up">
       <h1 className="mb-6">Ajustes</h1>
@@ -289,7 +368,7 @@ export default function Configuracion({ theme, toggleTheme }: Props) {
       </div>
 
       <div className="card mb-6" style={{ padding: '1rem' }}>
-        <h2 className="mb-2" style={{ fontSize: '1.1rem' }}>Importar Datos</h2>
+        <h2 className="mb-2" style={{ fontSize: '1.1rem' }}>Importar Clientes</h2>
         <p className="text-sm mb-4 text-secondary">
           Migra tus cuentas del cuaderno físico fácilmente subiendo un archivo CSV con tus clientes y sus deudas iniciales.
         </p>
@@ -321,8 +400,46 @@ export default function Configuracion({ theme, toggleTheme }: Props) {
              <span style={{ fontSize: '0.75rem', fontWeight: 600 }}>{importing ? "Importando..." : "2. Subir Archivo"}</span>
            </button>
         </div>
-        <p className="text-[0.7rem] text-secondary mt-3 text-center">
+         <p className="text-[0.7rem] text-secondary mt-3 text-center">
            Nota: Formato Nombre, Telefono, MontoUSD, Concepto
+        </p>
+      </div>
+
+      <div className="card mb-6" style={{ padding: '1rem' }}>
+        <h2 className="mb-2" style={{ fontSize: '1.1rem' }}>Importar Inventario</h2>
+        <p className="text-sm mb-4 text-secondary">
+          Sube tu lista de productos masivamente desde un archivo CSV.
+        </p>
+
+        <div className="flex gap-3 mt-4">
+           <button 
+             onClick={downloadInventoryTemplate}
+             className="btn btn-glass flex-1 flex-col gap-2 text-secondary"
+             style={{ padding: '0.85rem', borderRadius: '12px' }}
+           >
+             <Download size={20} />
+             <span style={{ fontSize: '0.75rem', fontWeight: 600 }}>1. Plantilla CSV</span>
+           </button>
+           
+           <input 
+             type="file" 
+             accept=".csv" 
+             ref={invInputRef} 
+             style={{ display: 'none' }} 
+             onChange={handleInventoryUpload}
+           />
+           <button 
+             onClick={() => invInputRef.current?.click()}
+             disabled={importingInv}
+             className="btn btn-primary flex-1 flex-col gap-2"
+             style={{ padding: '0.85rem', borderRadius: '12px', opacity: importingInv ? 0.7 : 1 }}
+           >
+             <Upload size={20} className={importingInv ? "animate-bounce" : ""} />
+             <span style={{ fontSize: '0.75rem', fontWeight: 600 }}>{importingInv ? "Importando..." : "2. Subir Archivo"}</span>
+           </button>
+        </div>
+        <p className="text-[0.7rem] text-secondary mt-3 text-center">
+           Nota: Formato Nombre, PrecioUSD, Stock, AlertaMinima
         </p>
       </div>
 
@@ -344,7 +461,6 @@ export default function Configuracion({ theme, toggleTheme }: Props) {
       </div>
       
       <div className="text-center text-sm" style={{ padding: '1rem' }}>
-        <p className="font-bold text-secondary">BodegaApp v2.0 iOS Style</p>
       </div>
 
       <style>{`
