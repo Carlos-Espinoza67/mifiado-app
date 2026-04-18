@@ -21,7 +21,7 @@ export default function NuevaTransaccion() {
   const [amountInput, setAmountInput] = useState("");
   const [currency, setCurrency] = useState<'USD' | 'VES'>('USD');
   const [concept, setConcept] = useState("");
-  const [selectedDebtId, setSelectedDebtId] = useState<string | null>(null);
+  const [selectedDebtIds, setSelectedDebtIds] = useState<string[]>([]);
   const [paymentMethod, setPaymentMethod] = useState<'efectivo' | 'punto' | 'pagomovil' | "">("");
   const [reference, setReference] = useState("");
 
@@ -87,7 +87,7 @@ export default function NuevaTransaccion() {
         alert("El vecino seleccionado no tiene deudas pendientes.");
         return;
       }
-      if (!selectedDebtId) {
+      if (selectedDebtIds.length === 0) {
         alert("Debes seleccionar a cuál cuenta pendiente abonar.");
         return;
       }
@@ -111,28 +111,73 @@ export default function NuevaTransaccion() {
       ? cartItems.map(ci => ({ productId: ci.product.id, name: ci.product.name, priceUsd: ci.product.priceUsd, quantity: ci.quantity })) 
       : undefined;
 
-    await db.transactions.add({
-      id: generateId(),
-      clientId,
-      type,
-      amountUsd,
-      amountBs,
-      concept: type === 'deuda' ? concept : (concept || 'Abono general'),
-      exchangeRate: bcvRate,
-      createdAt: new Date().toISOString(),
-      linkedDebtId: (type === 'abono' && selectedDebtId) ? selectedDebtId : undefined,
-      paymentMethod: type === 'abono' ? (paymentMethod as any) : undefined,
-      reference: type === 'abono' ? reference : undefined,
-      items: finalItems
-    });
+    if (type === 'abono') {
+      let remainingToDistributeUsd = amountUsd;
+      const selectedDebts = pendingDebts.filter(d => selectedDebtIds.includes(d.id)).sort((a,b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+      
+      const transactionsToAdd = [];
+      for (const debt of selectedDebts) {
+        if (remainingToDistributeUsd <= 0) break;
+        
+        const allocationUsd = Math.min(debt.remainingUsd, remainingToDistributeUsd);
+        const allocationBs = parseFloat((allocationUsd * bcvRate).toFixed(2));
+        
+        transactionsToAdd.push({
+          id: generateId(),
+          clientId,
+          type,
+          amountUsd: allocationUsd,
+          amountBs: allocationBs,
+          concept: concept || 'Abono a cuenta',
+          exchangeRate: bcvRate,
+          createdAt: new Date().toISOString(),
+          linkedDebtId: debt.id,
+          paymentMethod: paymentMethod as any,
+          reference: reference
+        });
+        
+        remainingToDistributeUsd -= allocationUsd;
+      }
+      
+      if (remainingToDistributeUsd > 0.01) {
+        transactionsToAdd.push({
+          id: generateId(),
+          clientId,
+          type,
+          amountUsd: remainingToDistributeUsd,
+          amountBs: parseFloat((remainingToDistributeUsd * bcvRate).toFixed(2)),
+          concept: concept || 'Abono general (excedente)',
+          exchangeRate: bcvRate,
+          createdAt: new Date().toISOString(),
+          paymentMethod: paymentMethod as any,
+          reference: reference
+        });
+      }
+      
+      for (const t of transactionsToAdd) {
+        await db.transactions.add(t);
+      }
+    } else {
+      await db.transactions.add({
+        id: generateId(),
+        clientId,
+        type,
+        amountUsd,
+        amountBs,
+        concept: concept,
+        exchangeRate: bcvRate,
+        createdAt: new Date().toISOString(),
+        items: finalItems
+      });
 
-    if (finalItems) {
-      // Descontar inventario
-      for (const item of finalItems) {
-         const p = await db.products.get(item.productId);
-         if (p) {
-           await db.products.update(p.id, { stock: p.stock - item.quantity });
-         }
+      if (finalItems) {
+        // Descontar inventario
+        for (const item of finalItems) {
+           const p = await db.products.get(item.productId);
+           if (p) {
+             await db.products.update(p.id, { stock: p.stock - item.quantity });
+           }
+        }
       }
     }
 
@@ -140,17 +185,28 @@ export default function NuevaTransaccion() {
   };
 
   const handleSelectDebt = (debt: any) => {
-    if (selectedDebtId === debt.id) {
-       setSelectedDebtId(null);
-       setAmountInput("");
-       return;
-    }
-    setSelectedDebtId(debt.id);
-    if (currency === 'VES') {
-      setAmountInput((debt.remainingUsd * bcvRate).toFixed(2));
-    } else {
-      setAmountInput(debt.remainingUsd.toFixed(2));
-    }
+    setSelectedDebtIds(prev => {
+      let newIds;
+      if (prev.includes(debt.id)) {
+        newIds = prev.filter(id => id !== debt.id);
+      } else {
+        newIds = [...prev, debt.id];
+      }
+      
+      const selectedDebts = pendingDebts.filter(d => newIds.includes(d.id));
+      const totalUsd = selectedDebts.reduce((sum, d) => sum + d.remainingUsd, 0);
+      
+      if (newIds.length === 0) {
+        setAmountInput("");
+      } else {
+        if (currency === 'VES') {
+          setAmountInput((totalUsd * bcvRate).toFixed(2));
+        } else {
+          setAmountInput(totalUsd.toFixed(2));
+        }
+      }
+      return newIds;
+    });
   };
 
   return (
@@ -176,7 +232,7 @@ export default function NuevaTransaccion() {
               value={clientId}
               onChange={e => {
                 setClientId(e.target.value);
-                setSelectedDebtId(null);
+                setSelectedDebtIds([]);
                 setAmountInput("");
               }}
               required
@@ -246,7 +302,7 @@ export default function NuevaTransaccion() {
               <label className="input-label mb-2 block">Abonar a cuenta específica:</label>
               <div className="flex flex-col gap-3">
                  {pendingDebts.map(debt => {
-                   const isSelected = selectedDebtId === debt.id;
+                   const isSelected = selectedDebtIds.includes(debt.id);
                    const debtBs = debt.remainingUsd * bcvRate;
                    return (
                      <div 
