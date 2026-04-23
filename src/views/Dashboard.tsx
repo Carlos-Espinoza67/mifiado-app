@@ -114,7 +114,10 @@ export default function Dashboard() {
       </div>
 
       <div className="card mb-6" style={{ padding: '1rem' }}>
-        <h2 className="text-sm font-bold text-secondary mb-3">Ventas de Hoy</h2>
+        <div className="flex justify-between items-center mb-3">
+          <h2 className="text-sm font-bold text-secondary">Ventas de Hoy</h2>
+          <Link to="/historial" className="text-accent text-xs font-bold" style={{ textDecoration: 'none' }}>Historial Completo</Link>
+        </div>
         <div className="flex justify-between items-end mb-4">
           <div>
              <p className="font-heavy text-accent" style={{ fontSize: '1.8rem', lineHeight: '1' }}>${formatUsd(totalSalesUsd)}</p>

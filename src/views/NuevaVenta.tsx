@@ -17,6 +17,7 @@ export default function NuevaVenta() {
   const [searchTerm, setSearchTerm] = useState("");
   
   const [paymentMethod, setPaymentMethod] = useState<'efectivo' | 'punto' | 'pagomovil' | "">("");
+  const [reference, setReference] = useState("");
   
   const totalUsd = cartItems.reduce((acc, item) => acc + (item.product.priceUsd * item.quantity), 0);
   const totalBs = parseFloat((totalUsd * bcvRate).toFixed(2));
@@ -54,6 +55,7 @@ export default function NuevaVenta() {
       exchangeRate: bcvRate,
       createdAt: new Date().toISOString(),
       paymentMethod: paymentMethod as any,
+      reference: reference,
       items: items
     });
 
@@ -198,6 +200,18 @@ export default function NuevaVenta() {
                 </button>
               </div>
             </div>
+
+            {paymentMethod && paymentMethod !== 'efectivo' && (
+              <div className="input-group mt-4">
+                <label className="input-label">Referencia bancaria</label>
+                <input 
+                  className="input-field" 
+                  placeholder="Ej. 1234..."
+                  value={reference}
+                  onChange={e => setReference(e.target.value)}
+                />
+              </div>
+            )}
           </div>
         </div>
       )}

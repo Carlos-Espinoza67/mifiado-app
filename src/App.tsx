@@ -12,6 +12,7 @@ import NuevaTransaccion from './views/NuevaTransaccion'
 import Configuracion from './views/Configuracion'
 import Inventario from './views/Inventario'
 import NuevaVenta from './views/NuevaVenta'
+import Historial from './views/Historial'
 import Auth from './views/Auth'
 
 function App() {
@@ -81,6 +82,7 @@ function App() {
           <Route path="/cliente/:id" element={<ClienteDetalle />} />
           <Route path="/transaccion/nueva" element={<NuevaTransaccion />} />
           <Route path="/venta/nueva" element={<NuevaVenta />} />
+          <Route path="/historial" element={<Historial />} />
           <Route path="/config" element={<Configuracion theme={theme} toggleTheme={toggleTheme} />} />
         </Routes>
         
@@ -92,7 +94,7 @@ function App() {
 
 function BottomNav() {
   const location = useLocation();
-  const shouldHide = location.pathname.startsWith('/cliente/') || location.pathname.includes('/transaccion/nueva') || location.pathname.includes('/venta/nueva');
+  const shouldHide = location.pathname.startsWith('/cliente/') || location.pathname.includes('/transaccion/nueva') || location.pathname.includes('/venta/nueva') || location.pathname.includes('/historial');
 
   if (shouldHide) return null;
 
