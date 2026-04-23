@@ -51,6 +51,39 @@ export default function Dashboard() {
 
   const lowStockProducts = productsRaw?.filter(p => p.stock <= p.minStockAlert) || [];
 
+  const oldDebtsAlerts: { clientName: string, daysOld: number, amount: number, clientId: string }[] = [];
+  if (transactionsRaw && clientsRaw) {
+    clientsRaw.forEach(client => {
+      const userDebts = transactionsRaw.filter(t => t.clientId === client.id && t.type === 'deuda');
+      const userAbonos = transactionsRaw.filter(t => t.clientId === client.id && t.type === 'abono');
+      
+      const pendingUserDebts = userDebts.map(debt => {
+        const abonos = userAbonos.filter(a => a.linkedDebtId === debt.id);
+        const paidUsd = abonos.reduce((sum, a) => sum + a.amountUsd, 0);
+        return { ...debt, remainingUsd: debt.amountUsd - paidUsd };
+      }).filter(d => d.remainingUsd > 0.00);
+
+      if (pendingUserDebts.length > 0) {
+        pendingUserDebts.sort((a,b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+        const oldestDebt = pendingUserDebts[0];
+        
+        const debtDate = new Date(oldestDebt.createdAt);
+        const now = new Date();
+        const diffTime = Math.abs(now.getTime() - debtDate.getTime());
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        
+        if (diffDays >= 15) {
+           oldDebtsAlerts.push({
+             clientName: client.name,
+             daysOld: diffDays,
+             amount: oldestDebt.remainingUsd,
+             clientId: client.id
+           });
+        }
+      }
+    });
+  }
+
   return (
     <div className="animate-slide-up pb-12">
       <h1 className="mb-4 font-heavy" style={{ 
@@ -70,6 +103,19 @@ export default function Dashboard() {
              <div>
                <p className="font-bold text-danger text-sm">Alerta de Inventario</p>
                <p className="text-xs text-danger font-medium">Hay {lowStockProducts.length} producto(s) por agotarse.</p>
+             </div>
+           </div>
+           <ChevronRight className="text-danger" size={20} />
+        </div>
+      )}
+
+      {oldDebtsAlerts.length > 0 && (
+        <div onClick={() => navigate('/clientes')} className="card mb-4 cursor-pointer" style={{ background: 'var(--danger-soft)', borderColor: 'var(--danger)', borderWidth: '2px', borderStyle: 'solid', padding: '0.8rem 1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '0 0 1rem 0' }}>
+           <div className="flex items-center gap-3">
+             <AlertTriangle className="text-danger" size={24} />
+             <div>
+               <p className="font-bold text-danger text-sm">Alerta de Cobranza</p>
+               <p className="text-xs text-danger font-medium">Hay {oldDebtsAlerts.length} fiado(s) pendiente de hace 15+ días.</p>
              </div>
            </div>
            <ChevronRight className="text-danger" size={20} />
