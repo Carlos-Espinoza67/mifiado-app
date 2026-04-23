@@ -18,8 +18,8 @@ export interface Product {
 
 export interface Transaction {
   id: string; // UUID
-  clientId: string;
-  type: 'deuda' | 'abono';
+  clientId?: string;
+  type: 'deuda' | 'abono' | 'venta';
   amountUsd: number; 
   amountBs: number; 
   concept?: string;

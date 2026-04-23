@@ -1,6 +1,6 @@
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "../db";
-import { PlusCircle, ArrowDownCircle, ChevronRight, Wallet, ArrowUpRight, AlertTriangle } from "lucide-react";
+import { PlusCircle, ArrowDownCircle, ChevronRight, Wallet, ArrowUpRight, AlertTriangle, ShoppingCart, Banknote, CreditCard, Smartphone } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { formatBs, formatUsd } from "../utils";
 
@@ -14,10 +14,25 @@ export default function Dashboard() {
   const bcvRate = settings?.currentBcvRate || 0;
   
   let totalUsd = 0;
+  let salesEfectivoUsd = 0;
+  let salesPuntoUsd = 0;
+  let salesPagoMovilUsd = 0;
+  let totalSalesUsd = 0;
+  
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+
   if (transactionsRaw) {
     transactionsRaw.forEach(t => {
       if (t.type === 'deuda') totalUsd += t.amountUsd;
       if (t.type === 'abono') totalUsd -= t.amountUsd;
+      
+      if (t.type === 'venta' && new Date(t.createdAt) >= todayStart) {
+        totalSalesUsd += t.amountUsd;
+        if (t.paymentMethod === 'efectivo') salesEfectivoUsd += t.amountUsd;
+        else if (t.paymentMethod === 'punto') salesPuntoUsd += t.amountUsd;
+        else if (t.paymentMethod === 'pagomovil') salesPagoMovilUsd += t.amountUsd;
+      }
     });
   }
 
@@ -83,7 +98,11 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.5rem', marginBottom: '1.5rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.5rem', marginBottom: '1.5rem' }}>
+        <Link to="/venta/nueva" className="btn btn-primary" style={{ textDecoration: 'none', boxShadow: 'none', flexDirection: 'column', gap: '6px', padding: '0.85rem', background: 'var(--accent)' }}>
+          <ShoppingCart size={22} color="white" />
+          <span className="font-bold text-white" style={{ fontSize: '0.8rem' }}>Vender</span>
+        </Link>
         <Link to="/transaccion/nueva?tipo=deuda" className="btn btn-danger-soft" style={{ textDecoration: 'none', boxShadow: 'none', flexDirection: 'column', gap: '6px', padding: '0.85rem' }}>
           <PlusCircle size={22} />
           <span className="font-bold" style={{ fontSize: '0.8rem' }}>Fiar</span>
@@ -92,6 +111,33 @@ export default function Dashboard() {
           <ArrowDownCircle size={22} />
           <span className="font-bold" style={{ fontSize: '0.8rem' }}>Cobrar</span>
         </Link>
+      </div>
+
+      <div className="card mb-6" style={{ padding: '1rem' }}>
+        <h2 className="text-sm font-bold text-secondary mb-3">Ventas de Hoy</h2>
+        <div className="flex justify-between items-end mb-4">
+          <div>
+             <p className="font-heavy text-accent" style={{ fontSize: '1.8rem', lineHeight: '1' }}>${formatUsd(totalSalesUsd)}</p>
+             <p className="text-sm font-bold text-secondary">{formatBs(totalSalesUsd * bcvRate)} Bs</p>
+          </div>
+        </div>
+        <div className="flex gap-2">
+           <div className="flex-1 bg-surface p-2 rounded-lg border border-color flex flex-col items-center">
+              <Banknote size={16} className="text-success mb-1" />
+              <span className="font-bold text-xs">${formatUsd(salesEfectivoUsd)}</span>
+           </div>
+           <div className="flex-1 bg-surface p-2 rounded-lg border border-color flex flex-col items-center">
+              <CreditCard size={16} className="text-accent mb-1" />
+              <span className="font-bold text-xs">${formatUsd(salesPuntoUsd)}</span>
+           </div>
+           <div className="flex-1 bg-surface p-2 rounded-lg border border-color flex flex-col items-center">
+              <Smartphone size={16} className="text-danger mb-1" />
+              <span className="font-bold text-xs">${formatUsd(salesPagoMovilUsd)}</span>
+           </div>
+        </div>
+      </div>
+      
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.5rem', marginBottom: '1.5rem' }}>
         <div className="card cursor-pointer" onClick={() => navigate('/clientes')} style={{ padding: '0.85rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', margin: 0, border: 'none' }}>
           <p className="text-secondary mb-1 font-bold" style={{ fontSize: '0.75rem', letterSpacing: '0.02em', textTransform: 'uppercase' }}>Clientes</p>
           <p className="font-heavy" style={{ fontSize: '1.25rem', color: 'var(--text-primary)' }}>{clientsRaw?.length ?? 0}</p>
