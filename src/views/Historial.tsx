@@ -6,11 +6,8 @@ import { formatBs, formatUsd } from "../utils";
 
 export default function Historial() {
   const navigate = useNavigate();
-  const settings = useLiveQuery(() => db.settings.get('config'));
   const transactionsRaw = useLiveQuery(() => db.transactions.toArray());
   const clientsRaw = useLiveQuery(() => db.clients.toArray());
-
-  const bcvRate = settings?.currentBcvRate || 0;
 
   const transactions = (transactionsRaw || []).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   const clientsMap = new Map((clientsRaw || []).map(c => [c.id, c.name]));
