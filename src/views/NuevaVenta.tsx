@@ -214,23 +214,41 @@ export default function NuevaVenta() {
             </div>
             
             <div className="flex flex-col gap-3">
-              <div className="flex items-center gap-2">
-                <button type="button" onClick={() => autoFillPayment('efectivo')} className="btn btn-glass p-2 w-10 text-accent"><Banknote size={20}/></button>
-                <div className="flex-1 input-group m-0">
-                  <input type="number" step="0.01" min="0" placeholder="Efectivo" className="input-field py-2" value={paymentBreakdown.efectivo} onChange={e => handlePaymentChange('efectivo', e.target.value)} />
+              <div className="flex items-center gap-3">
+                <div style={{ width: '110px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Banknote className="text-success" size={20}/>
+                  <span className="font-bold text-sm">Efectivo</span>
                 </div>
+                <div className="flex-1 input-group m-0">
+                  <input type="number" step="0.01" min="0" placeholder="0.00" className="input-field" value={paymentBreakdown.efectivo} onChange={e => handlePaymentChange('efectivo', e.target.value)} style={{ padding: '0.5rem 0.8rem' }} />
+                </div>
+                <button type="button" onClick={() => autoFillPayment('efectivo')} className="btn btn-glass" style={{ width: 'auto', padding: '0.4rem 0.8rem', fontSize: '0.75rem' }}>
+                  Resto
+                </button>
               </div>
-              <div className="flex items-center gap-2">
-                <button type="button" onClick={() => autoFillPayment('punto')} className="btn btn-glass p-2 w-10 text-accent"><CreditCard size={20}/></button>
-                <div className="flex-1 input-group m-0">
-                  <input type="number" step="0.01" min="0" placeholder="Punto" className="input-field py-2" value={paymentBreakdown.punto} onChange={e => handlePaymentChange('punto', e.target.value)} />
+              <div className="flex items-center gap-3">
+                <div style={{ width: '110px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <CreditCard className="text-accent" size={20}/>
+                  <span className="font-bold text-sm">Punto</span>
                 </div>
+                <div className="flex-1 input-group m-0">
+                  <input type="number" step="0.01" min="0" placeholder="0.00" className="input-field" value={paymentBreakdown.punto} onChange={e => handlePaymentChange('punto', e.target.value)} style={{ padding: '0.5rem 0.8rem' }} />
+                </div>
+                <button type="button" onClick={() => autoFillPayment('punto')} className="btn btn-glass" style={{ width: 'auto', padding: '0.4rem 0.8rem', fontSize: '0.75rem' }}>
+                  Resto
+                </button>
               </div>
-              <div className="flex items-center gap-2">
-                <button type="button" onClick={() => autoFillPayment('pagomovil')} className="btn btn-glass p-2 w-10 text-accent"><Smartphone size={20}/></button>
-                <div className="flex-1 input-group m-0">
-                  <input type="number" step="0.01" min="0" placeholder="Pago Móvil" className="input-field py-2" value={paymentBreakdown.pagomovil} onChange={e => handlePaymentChange('pagomovil', e.target.value)} />
+              <div className="flex items-center gap-3">
+                <div style={{ width: '110px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Smartphone className="text-danger" size={20}/>
+                  <span className="font-bold text-sm">Pago Móvil</span>
                 </div>
+                <div className="flex-1 input-group m-0">
+                  <input type="number" step="0.01" min="0" placeholder="0.00" className="input-field" value={paymentBreakdown.pagomovil} onChange={e => handlePaymentChange('pagomovil', e.target.value)} style={{ padding: '0.5rem 0.8rem' }} />
+                </div>
+                <button type="button" onClick={() => autoFillPayment('pagomovil')} className="btn btn-glass" style={{ width: 'auto', padding: '0.4rem 0.8rem', fontSize: '0.75rem' }}>
+                  Resto
+                </button>
               </div>
             </div>
             
