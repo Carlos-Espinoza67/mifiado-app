@@ -1,7 +1,8 @@
+import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "../db";
-import { ArrowLeft, ArrowUpRight, ArrowDownRight, ShoppingCart, Home } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, ArrowDownRight, ShoppingCart, Home, Search } from "lucide-react";
 import { formatBs, formatUsd } from "../utils";
 
 export default function Historial() {
@@ -11,6 +12,9 @@ export default function Historial() {
 
   const transactions = (transactionsRaw || []).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   const clientsMap = new Map((clientsRaw || []).map(c => [c.id, c.name]));
+
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterType, setFilterType] = useState<string>("todas");
 
   const getTransactionIcon = (type: string) => {
     if (type === 'venta') return <ShoppingCart size={20} className="text-accent" />;
@@ -27,6 +31,18 @@ export default function Historial() {
     return 'Transacción';
   };
 
+  const filteredTransactions = transactions.filter(t => {
+    if (filterType !== 'todas' && t.type !== filterType) return false;
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      const title = getTransactionTitle(t).toLowerCase();
+      const concept = t.concept?.toLowerCase() || '';
+      const ref = t.reference?.toLowerCase() || '';
+      if (!title.includes(term) && !concept.includes(term) && !ref.includes(term)) return false;
+    }
+    return true;
+  });
+
   return (
     <div className="animate-slide-up pb-12">
       <div className="flex justify-between items-center mb-6" style={{ background: 'var(--bg-main)', position: 'sticky', top: 0, paddingBottom: '1rem', paddingTop: 'max(1rem, env(safe-area-inset-top))', zIndex: 10 }}>
@@ -41,14 +57,43 @@ export default function Historial() {
         </Link>
       </div>
 
+      <div className="card mb-4" style={{ padding: '1rem' }}>
+        <div className="input-group mb-4">
+           <div className="flex items-center gap-2 bg-surface rounded-xl border-none" style={{ background: 'var(--bg-main)', padding: '0 0.8rem' }}>
+              <Search className="text-secondary" size={20} />
+              <input 
+                type="text" 
+                placeholder="Buscar por referencia, concepto o cliente..." 
+                className="input-field"
+                style={{ background: 'transparent', paddingLeft: '0' }}
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+              />
+           </div>
+        </div>
+        <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
+           {['todas', 'venta', 'deuda', 'abono'].map(type => (
+             <button 
+               key={type}
+               type="button" 
+               onClick={() => setFilterType(type)}
+               className={`btn ${filterType === type ? 'btn-primary' : 'btn-glass'}`}
+               style={{ width: 'auto', padding: '0.4rem 1rem', textTransform: 'capitalize', borderRadius: '100px' }}
+             >
+               {type}
+             </button>
+           ))}
+        </div>
+      </div>
+
       <div className="flex flex-col gap-3">
-        {transactions.length === 0 ? (
+        {filteredTransactions.length === 0 ? (
           <div className="text-center card" style={{ padding: '2rem', background: 'var(--bg-card)' }}>
-            <p className="font-heavy text-secondary">Sin movimientos</p>
-            <p className="text-sm mt-1 text-secondary">Aún no has registrado transacciones.</p>
+            <p className="font-heavy text-secondary">No hay resultados</p>
+            <p className="text-sm mt-1 text-secondary">No se encontraron transacciones que coincidan.</p>
           </div>
         ) : (
-          transactions.map(t => (
+          filteredTransactions.map(t => (
             <div key={t.id} className="card flex flex-col gap-2" style={{ padding: '1rem' }}>
                <div className="flex justify-between items-start">
                   <div className="flex items-center gap-3">

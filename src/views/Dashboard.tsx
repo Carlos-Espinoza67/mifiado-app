@@ -116,7 +116,7 @@ export default function Dashboard() {
       <div className="card mb-6" style={{ padding: '1rem' }}>
         <div className="flex justify-between items-center mb-3">
           <h2 className="text-sm font-bold text-secondary">Ventas de Hoy</h2>
-          <Link to="/historial" className="text-accent text-xs font-bold" style={{ textDecoration: 'none' }}>Historial Completo</Link>
+          <Link to="/historial" className="font-bold" style={{ textDecoration: 'none', fontSize: '0.75rem', padding: '0.3rem 0.8rem', borderRadius: '100px', background: 'var(--accent-soft)', color: 'var(--accent)' }}>Ver todo</Link>
         </div>
         <div className="flex justify-between items-end mb-4">
           <div>
