@@ -109,7 +109,7 @@ export default function Historial() {
                className={`btn ${filterType === type ? 'btn-primary' : 'btn-glass'}`}
                style={{ width: 'auto', padding: '0.4rem 1rem', textTransform: 'capitalize', borderRadius: '100px' }}
              >
-               {type}
+               {type === 'abono' ? 'Pago' : type}
              </button>
            ))}
         </div>
