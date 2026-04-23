@@ -2,19 +2,23 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "../db";
-import { ArrowLeft, ArrowUpRight, ArrowDownRight, ShoppingCart, Home, Search } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, ArrowDownRight, ShoppingCart, Home, Search, Calendar } from "lucide-react";
 import { formatBs, formatUsd } from "../utils";
 
 export default function Historial() {
   const navigate = useNavigate();
+  const settings = useLiveQuery(() => db.settings.get('config'));
   const transactionsRaw = useLiveQuery(() => db.transactions.toArray());
   const clientsRaw = useLiveQuery(() => db.clients.toArray());
+
+  const bcvRate = settings?.currentBcvRate || 0;
 
   const transactions = (transactionsRaw || []).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   const clientsMap = new Map((clientsRaw || []).map(c => [c.id, c.name]));
 
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState<string>("todas");
+  const [filterDate, setFilterDate] = useState<string>("");
 
   const getTransactionIcon = (type: string) => {
     if (type === 'venta') return <ShoppingCart size={20} className="text-accent" />;
@@ -33,6 +37,14 @@ export default function Historial() {
 
   const filteredTransactions = transactions.filter(t => {
     if (filterType !== 'todas' && t.type !== filterType) return false;
+    
+    if (filterDate) {
+      // Local time matching
+      const tDate = new Date(t.createdAt);
+      const localDateStr = new Date(tDate.getTime() - tDate.getTimezoneOffset() * 60000).toISOString().split('T')[0];
+      if (localDateStr !== filterDate) return false;
+    }
+
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       const title = getTransactionTitle(t).toLowerCase();
@@ -42,6 +54,9 @@ export default function Historial() {
     }
     return true;
   });
+
+  const totalIncomesUsd = filteredTransactions.filter(t => t.type === 'venta' || t.type === 'abono').reduce((sum, t) => sum + t.amountUsd, 0);
+  const totalOutcomesUsd = filteredTransactions.filter(t => t.type === 'deuda').reduce((sum, t) => sum + t.amountUsd, 0);
 
   return (
     <div className="animate-slide-up pb-12">
@@ -58,18 +73,32 @@ export default function Historial() {
       </div>
 
       <div className="card mb-4" style={{ padding: '1rem' }}>
-        <div className="input-group mb-4">
-           <div className="flex items-center gap-2 bg-surface rounded-xl border-none" style={{ background: 'var(--bg-main)', padding: '0 0.8rem' }}>
-              <Search className="text-secondary" size={20} />
-              <input 
-                type="text" 
-                placeholder="Buscar por referencia, concepto o cliente..." 
-                className="input-field"
-                style={{ background: 'transparent', paddingLeft: '0' }}
-                value={searchTerm}
-                onChange={e => setSearchTerm(e.target.value)}
-              />
-           </div>
+        <div className="flex gap-2 mb-4">
+          <div className="input-group flex-1 m-0">
+             <div className="flex items-center gap-2 bg-surface rounded-xl border-none" style={{ background: 'var(--bg-main)', padding: '0 0.8rem' }}>
+                <Search className="text-secondary" size={20} />
+                <input 
+                  type="text" 
+                  placeholder="Buscar..." 
+                  className="input-field"
+                  style={{ background: 'transparent', paddingLeft: '0' }}
+                  value={searchTerm}
+                  onChange={e => setSearchTerm(e.target.value)}
+                />
+             </div>
+          </div>
+          <div className="input-group m-0" style={{ width: '130px' }}>
+             <div className="flex items-center gap-2 bg-surface rounded-xl border-none" style={{ background: 'var(--bg-main)', padding: '0 0.8rem', position: 'relative' }}>
+                <Calendar className="text-secondary" size={20} style={{ position: 'absolute', left: '0.8rem', pointerEvents: 'none' }} />
+                <input 
+                  type="date" 
+                  className="input-field"
+                  style={{ background: 'transparent', paddingLeft: '2rem' }}
+                  value={filterDate}
+                  onChange={e => setFilterDate(e.target.value)}
+                />
+             </div>
+          </div>
         </div>
         <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
            {['todas', 'venta', 'deuda', 'abono'].map(type => (
@@ -85,6 +114,19 @@ export default function Historial() {
            ))}
         </div>
       </div>
+
+      {(totalIncomesUsd > 0 || totalOutcomesUsd > 0) && (
+        <div className="flex justify-between items-center mb-4 px-2">
+           <div>
+              <p className="text-xs font-bold text-secondary uppercase tracking-wider">Total Filtrado</p>
+           </div>
+           <div className="text-right">
+              {totalIncomesUsd > 0 && <p className="font-heavy text-success text-lg">+${formatUsd(totalIncomesUsd)}</p>}
+              {totalOutcomesUsd > 0 && <p className="font-heavy text-danger text-lg">-${formatUsd(totalOutcomesUsd)}</p>}
+              <p className="text-xs font-bold text-secondary">{formatBs((totalIncomesUsd + totalOutcomesUsd) * bcvRate)} Bs</p>
+           </div>
+        </div>
+      )}
 
       <div className="flex flex-col gap-3">
         {filteredTransactions.length === 0 ? (
