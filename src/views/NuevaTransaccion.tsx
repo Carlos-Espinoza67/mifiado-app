@@ -28,6 +28,7 @@ export default function NuevaTransaccion() {
   const products = useLiveQuery(() => db.products.toArray());
   const [cartItems, setCartItems] = useState<{product: Product, quantity: number}[]>([]);
   const [showProductSelect, setShowProductSelect] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const bcvRate = settings?.currentBcvRate || 0;
 
@@ -181,7 +182,10 @@ export default function NuevaTransaccion() {
       }
     }
 
-    navigate(preSelectedClient ? `/cliente/${clientId}` : '/');
+    setShowSuccess(true);
+    setTimeout(() => {
+      navigate(preSelectedClient ? `/cliente/${clientId}` : '/');
+    }, 1500);
   };
 
   const handleSelectDebt = (debt: any) => {
@@ -473,6 +477,21 @@ export default function NuevaTransaccion() {
           </button>
         </form>
       </div>
+
+      {showSuccess && (
+        <div className="animate-fade-in" style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(5px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div className="card animate-slide-up" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '1rem', background: 'var(--bg-surface)' }}>
+            <CheckCircle2 size={64} className="text-success" />
+            <h2 className="text-success font-heavy text-xl">¡Registro Exitoso!</h2>
+            <p className="text-secondary text-sm">El {isDeuda ? 'fiado' : 'abono'} se guardó correctamente.</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

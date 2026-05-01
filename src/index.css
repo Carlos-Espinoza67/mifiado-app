@@ -5,7 +5,7 @@
   --bg-card: #ffffff;
   --bg-glass: rgba(255, 255, 255, 0.75);
   --text-primary: #000000;
-  --text-secondary: #8e8e93; /* iOS Gray */
+  --text-secondary: #666666; /* iOS Gray improved contrast */
   --text-inverse: #ffffff;
   --accent: #007aff; /* iOS Blue */
   --accent-soft: rgba(0, 122, 255, 0.1);
@@ -37,7 +37,7 @@
   --bg-card: #1c1c1e;
   --bg-glass: rgba(28, 28, 30, 0.75);
   --text-primary: #ffffff;
-  --text-secondary: #98989d;
+  --text-secondary: #a1a1aa;
   --text-inverse: #ffffff;
   --accent: #0a84ff; /* iOS Dark Blue */
   --accent-soft: rgba(10, 132, 255, 0.15);
@@ -112,6 +112,7 @@ body {
   transition: var(--transition);
   font-family: inherit;
   width: 100%;
+  min-height: 44px; /* Tamaño táctil mínimo de 44x44 */
 }
 
 .btn-primary {

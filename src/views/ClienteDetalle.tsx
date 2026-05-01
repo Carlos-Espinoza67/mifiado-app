@@ -79,9 +79,9 @@ export default function ClienteDetalle() {
     const paidUsd = abonos.reduce((sum, a) => sum + a.amountUsd, 0);
     const diff = amountUsd - paidUsd;
     
-    if (diff <= 0.00) return { label: '✅ Saldada', style: { color: 'var(--success)', fontWeight: 800 } };
-    if (paidUsd > 0.00) return { label: `⏱ Resta $${formatUsd(diff)}`, style: { color: 'var(--accent)', fontWeight: 600 } };
-    return { label: '⚠️ Pendiente', style: { color: 'var(--danger)', fontWeight: 600 } };
+    if (diff <= 0.00) return { label: 'Pagado', style: { color: 'var(--success)', backgroundColor: 'var(--success-soft)', padding: '4px 10px', borderRadius: '12px' } };
+    if (paidUsd > 0.00) return { label: `Resta $${formatUsd(diff)}`, style: { color: 'var(--accent)', backgroundColor: 'var(--accent-soft)', padding: '4px 10px', borderRadius: '12px' } };
+    return { label: 'Vencido', style: { color: 'var(--danger)', backgroundColor: 'var(--danger-soft)', padding: '4px 10px', borderRadius: '12px' } };
   };
 
   const getPaymentMethodIcon = (method?: string) => {
