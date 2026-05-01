@@ -94,6 +94,7 @@ export default function Dashboard() {
         await db.settings.put({
           id: 'config',
           currentBcvRate: parsedRate,
+          lastUpdated: new Date().toISOString(),
           whatsappGreeting: settings?.whatsappGreeting || "Hola, te escribo de La Bodega."
         });
       } else if (newRateStr.trim() !== '') {
