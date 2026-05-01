@@ -92,7 +92,7 @@ export default function Clientes() {
           return (
             <Link key={client.id} to={`/cliente/${client.id}`} className="card" style={{ textDecoration: 'none', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem', margin: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                  <div style={{ background: 'var(--accent-soft)', color: 'var(--accent)', padding: '0.6rem', borderRadius: '50%' }}>
+                  <div style={{ background: 'var(--accent-soft)', color: 'var(--accent)', width: '42px', height: '42px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <User size={22} />
                   </div>
                   <div>
