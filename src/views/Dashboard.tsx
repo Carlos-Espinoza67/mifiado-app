@@ -84,6 +84,24 @@ export default function Dashboard() {
     });
   }
 
+  const handleUpdateRate = async () => {
+    const currentRateStr = bcvRate ? bcvRate.toString() : '';
+    const newRateStr = window.prompt("Ingresa la tasa BCV de hoy:", currentRateStr);
+    
+    if (newRateStr !== null) {
+      const parsedRate = parseFloat(newRateStr.replace(',', '.'));
+      if (!isNaN(parsedRate) && parsedRate > 0) {
+        await db.settings.put({
+          id: 'config',
+          currentBcvRate: parsedRate,
+          whatsappGreeting: settings?.whatsappGreeting || "Hola, te escribo de La Bodega."
+        });
+      } else if (newRateStr.trim() !== '') {
+        alert("Por favor ingresa un número válido mayor a 0.");
+      }
+    }
+  };
+
   return (
     <div className="animate-slide-up pb-12">
       <h1 className="mb-4 font-heavy" style={{ 
@@ -191,7 +209,7 @@ export default function Dashboard() {
           <p className="text-secondary mb-1 font-bold" style={{ fontSize: '0.75rem', letterSpacing: '0.02em', textTransform: 'uppercase' }}>Clientes</p>
           <p className="font-heavy" style={{ fontSize: '1.25rem', color: 'var(--text-primary)' }}>{clientsRaw?.length ?? 0}</p>
         </div>
-        <div className="card cursor-pointer" onClick={() => navigate('/config')} style={{ padding: '0.85rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', margin: 0, border: 'none' }}>
+        <div className="card cursor-pointer" onClick={handleUpdateRate} style={{ padding: '0.85rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', margin: 0, border: 'none' }}>
           <p className="text-secondary mb-1 font-bold" style={{ fontSize: '0.75rem', letterSpacing: '0.02em', textTransform: 'uppercase' }}>Tasa Hoy</p>
           <p className={`font-heavy ${!bcvRate ? 'text-danger' : 'text-accent'}`} style={{ fontSize: '1.25rem' }}>{bcvRate ? formatBs(bcvRate) : '---'}</p>
         </div>
