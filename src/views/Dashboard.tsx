@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "../db";
 import { PlusCircle, ArrowDownCircle, ChevronRight, Wallet, ArrowUpRight, AlertTriangle, ShoppingCart, Banknote, CreditCard, Smartphone } from "lucide-react";
@@ -84,22 +85,32 @@ export default function Dashboard() {
     });
   }
 
+  const [isFetchingRate, setIsFetchingRate] = useState(false);
+
   const handleUpdateRate = async () => {
-    const currentRateStr = bcvRate ? bcvRate.toString() : '';
-    const newRateStr = window.prompt("Ingresa la tasa BCV de hoy:", currentRateStr);
+    if (!navigator.onLine) {
+      alert("No tienes conexión a internet.");
+      return;
+    }
     
-    if (newRateStr !== null) {
-      const parsedRate = parseFloat(newRateStr.replace(',', '.'));
-      if (!isNaN(parsedRate) && parsedRate > 0) {
-        await db.settings.put({
-          id: 'config',
-          currentBcvRate: parsedRate,
-          lastUpdated: new Date().toISOString(),
-          whatsappGreeting: settings?.whatsappGreeting || "Hola, te escribo de La Bodega."
-        });
-      } else if (newRateStr.trim() !== '') {
-        alert("Por favor ingresa un número válido mayor a 0.");
-      }
+    setIsFetchingRate(true);
+    try {
+      const res = await fetch('https://ve.dolarapi.com/v1/dolares/oficial');
+      if (!res.ok) throw new Error("API error");
+      const data = await res.json();
+      
+      const newRate = data.promedio;
+      
+      await db.settings.put({
+        id: 'config',
+        currentBcvRate: newRate,
+        lastUpdated: new Date().toISOString(),
+        whatsappGreeting: settings?.whatsappGreeting || "Hola, te escribo de La Bodega."
+      });
+    } catch (error) {
+      alert("Error al conectarse con el BCV. Por favor ingresa a Ajustes para hacerlo manual.");
+    } finally {
+      setIsFetchingRate(false);
     }
   };
 
@@ -212,7 +223,9 @@ export default function Dashboard() {
         </div>
         <div className="card cursor-pointer" onClick={handleUpdateRate} style={{ padding: '0.85rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', margin: 0, border: 'none' }}>
           <p className="text-secondary mb-1 font-bold" style={{ fontSize: '0.75rem', letterSpacing: '0.02em', textTransform: 'uppercase' }}>Tasa Hoy</p>
-          <p className={`font-heavy ${!bcvRate ? 'text-danger' : 'text-accent'}`} style={{ fontSize: '1.25rem' }}>{bcvRate ? formatBs(bcvRate) : '---'}</p>
+          <p className={`font-heavy ${!bcvRate ? 'text-danger' : 'text-accent'} ${isFetchingRate ? 'animate-pulse' : ''}`} style={{ fontSize: '1.25rem' }}>
+             {isFetchingRate ? '...' : (bcvRate ? formatBs(bcvRate) : '---')}
+          </p>
         </div>
       </div>
 
