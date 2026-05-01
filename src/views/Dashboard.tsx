@@ -19,6 +19,7 @@ export default function Dashboard() {
   let salesPuntoUsd = 0;
   let salesPagoMovilUsd = 0;
   let totalSalesUsd = 0;
+  let todayAbonosUsd = 0;
   
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
@@ -26,7 +27,12 @@ export default function Dashboard() {
   if (transactionsRaw) {
     transactionsRaw.forEach(t => {
       if (t.type === 'deuda') totalUsd += t.amountUsd;
-      if (t.type === 'abono') totalUsd -= t.amountUsd;
+      if (t.type === 'abono') {
+        totalUsd -= t.amountUsd;
+        if (new Date(t.createdAt) >= todayStart) {
+          todayAbonosUsd += t.amountUsd;
+        }
+      }
       
       if (t.type === 'venta' && new Date(t.createdAt) >= todayStart) {
         totalSalesUsd += t.amountUsd;
@@ -124,7 +130,11 @@ export default function Dashboard() {
         fontSize: '1.8rem',
         letterSpacing: '-0.02em',
         marginTop: '0.5rem'
-      }}>Fiadoapp</h1>
+      }}>CuentasClaras</h1>
+      
+      <p className="text-secondary text-sm mb-4" style={{ lineHeight: '1.4' }}>
+        Hoy vendiste <strong className="text-primary">${formatUsd(totalSalesUsd)}</strong>, te abonaron <strong className="text-primary">${formatUsd(todayAbonosUsd)}</strong>, y tu inventario tiene <strong className="text-primary">{lowStockProducts.length}</strong> productos bajos en stock.
+      </p>
 
       {lowStockProducts.length > 0 && (
         <div onClick={() => navigate('/inventario')} className="card mb-4 cursor-pointer" style={{ background: 'var(--danger-soft)', borderColor: 'var(--danger)', borderWidth: '2px', borderStyle: 'solid', padding: '0.8rem 1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '0 0 1rem 0' }}>

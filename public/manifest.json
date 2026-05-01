@@ -1,7 +1,7 @@
 {
-  "name": "Fiadoapp - Gestión de Fiados",
-  "short_name": "Fiadoapp",
-  "description": "Controla los fiados de tus clientes de manera fácil, rápida y sin depender de internet.",
+  "name": "CuentasClaras - Gestión Integral",
+  "short_name": "CuentasClaras",
+  "description": "Controla los fiados, ventas e inventario de manera fácil, rápida y sin depender de internet.",
   "theme_color": "#0f172a",
   "background_color": "#0f172a",
   "display": "standalone",

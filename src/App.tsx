@@ -68,7 +68,7 @@ function App() {
 
   const toggleTheme = () => setTheme(prev => prev === 'light' ? 'dark' : 'light');
 
-  if (loading) return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: 'var(--bg-main)', color: 'var(--accent)', fontWeight: 'bold' }}>Cargando Fiadoapp...</div>;
+  if (loading) return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: 'var(--bg-main)', color: 'var(--accent)', fontWeight: 'bold' }}>Cargando CuentasClaras...</div>;
 
   if (!session) return <Auth />;
 
@@ -123,7 +123,7 @@ function BottomNav() {
       </Link>
       <Link to="/clientes" className={`nav-pill ${location.pathname === '/clientes' ? 'nav-active' : ''}`} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textDecoration: 'none', color: 'inherit' }}>
         <Users size={22} strokeWidth={location.pathname === '/clientes' ? 2.5 : 2} />
-        <span style={{ fontSize: '0.65rem', fontWeight: location.pathname === '/clientes' ? 700 : 500, marginTop: '4px' }}>Clientes</span>
+        <span style={{ fontSize: '0.65rem', fontWeight: location.pathname === '/clientes' ? 700 : 500, marginTop: '4px' }}>Fiados</span>
       </Link>
       <Link to="/inventario" className={`nav-pill ${location.pathname === '/inventario' ? 'nav-active' : ''}`} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textDecoration: 'none', color: 'inherit' }}>
         <Package size={22} strokeWidth={location.pathname === '/inventario' ? 2.5 : 2} />
