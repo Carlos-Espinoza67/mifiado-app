@@ -1,11 +1,13 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db, generateId } from "../db";
-import { Search, PlusCircle, Trash2, Edit2, AlertTriangle } from "lucide-react";
+import { Search, PlusCircle, Trash2, Edit2, AlertTriangle, Star, TrendingDown } from "lucide-react";
 import { formatUsd } from "../utils";
 
 export default function Inventario() {
   const products = useLiveQuery(() => db.products.toArray());
+  const transactions = useLiveQuery(() => db.transactions.where('type').anyOf('venta', 'deuda').toArray());
+
   const [search, setSearch] = useState("");
   const [showAddModal, setShowAddModal] = useState(false);
   
@@ -16,6 +18,46 @@ export default function Inventario() {
   const [costUsd, setCostUsd] = useState("");
   const [stock, setStock] = useState("");
   const [minStockAlert, setMinStockAlert] = useState("5");
+
+  const salesCount = useMemo(() => {
+    if (!transactions) return {};
+    const counts: Record<string, number> = {};
+    transactions.forEach(t => {
+      if (t.items) {
+        t.items.forEach(item => {
+          counts[item.productId] = (counts[item.productId] || 0) + item.quantity;
+        });
+      }
+    });
+    return counts;
+  }, [transactions]);
+
+  const { starIds, lowIds } = useMemo(() => {
+    if (!products) return { starIds: new Set(), lowIds: new Set() };
+    const productSales = products.map(p => ({
+      id: p.id,
+      sales: salesCount[p.id] || 0
+    }));
+    productSales.sort((a, b) => b.sales - a.sales);
+    
+    const totalProducts = productSales.length;
+    if (totalProducts === 0) return { starIds: new Set(), lowIds: new Set() };
+
+    const starLimit = Math.max(1, Math.floor(totalProducts * 0.25));
+    const starIdsSet = new Set(productSales.slice(0, starLimit).filter(p => p.sales > 0).map(p => p.id));
+    
+    const lowIdsSet = new Set<string>();
+    // Products with 0 sales are automatically low rotation, plus the bottom 25% if they aren't stars
+    const lowLimit = Math.max(1, Math.floor(totalProducts * 0.25));
+    const bottomItems = productSales.slice(-lowLimit);
+    
+    bottomItems.forEach(p => {
+      if (!starIdsSet.has(p.id)) lowIdsSet.add(p.id);
+    });
+    productSales.filter(p => p.sales === 0 && !starIdsSet.has(p.id)).forEach(p => lowIdsSet.add(p.id));
+
+    return { starIds: starIdsSet, lowIds: lowIdsSet };
+  }, [products, salesCount]);
 
   const filteredProducts = products?.filter(p => 
     p.name.toLowerCase().includes(search.toLowerCase())
@@ -105,7 +147,19 @@ export default function Inventario() {
             return (
               <div key={product.id} className="card" style={{ padding: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div style={{ flex: 1 }}>
-                  <h3 className="font-bold mb-1" style={{ fontSize: '1.1rem' }}>{product.name}</h3>
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3 className="font-bold" style={{ fontSize: '1.1rem' }}>{product.name}</h3>
+                    {starIds.has(product.id) && (
+                      <span className="flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: 'rgba(255, 215, 0, 0.2)', color: '#b8860b' }}>
+                        <Star size={12} fill="currentColor" /> Estrella
+                      </span>
+                    )}
+                    {lowIds.has(product.id) && !starIds.has(product.id) && (
+                      <span className="flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: 'var(--danger-soft)', color: 'var(--danger)' }}>
+                        <TrendingDown size={12} /> Poca Rotación
+                      </span>
+                    )}
+                  </div>
                   <div className="flex flex-col gap-1">
                     <div className="flex gap-2 items-center">
                       <span className="font-bold text-success">${formatUsd(product.priceUsd)}</span>
