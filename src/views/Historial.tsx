@@ -116,15 +116,20 @@ export default function Historial() {
       </div>
 
       {(totalIncomesUsd > 0 || totalOutcomesUsd > 0) && (
-        <div className="flex justify-between items-center mb-4 px-2">
-           <div>
-              <p className="text-xs font-bold text-secondary uppercase tracking-wider">Total Filtrado</p>
-           </div>
-           <div className="text-right">
-              {totalIncomesUsd > 0 && <p className="font-heavy text-success text-lg">+${formatUsd(totalIncomesUsd)}</p>}
-              {totalOutcomesUsd > 0 && <p className="font-heavy text-danger text-lg">-${formatUsd(totalOutcomesUsd)}</p>}
-              <p className="text-xs font-bold text-secondary">{formatBs((totalIncomesUsd + totalOutcomesUsd) * bcvRate)} Bs</p>
-           </div>
+        <div className="card mb-4 p-3 bg-surface border border-color flex flex-col gap-2">
+           <p className="text-xs font-bold text-secondary uppercase tracking-wider border-b border-color pb-2" style={{ borderBottomWidth: '1px' }}>Resumen de Transacciones</p>
+           {totalIncomesUsd > 0 && (
+             <div className="flex justify-between items-center">
+               <span className="text-sm font-medium text-secondary">Ingresos (Ventas/Cobros)</span>
+               <span className="font-heavy text-success">+${formatUsd(totalIncomesUsd)}</span>
+             </div>
+           )}
+           {totalOutcomesUsd > 0 && (
+             <div className="flex justify-between items-center">
+               <span className="text-sm font-medium text-secondary">Créditos Otorgados (Fiados)</span>
+               <span className="font-heavy text-danger">-${formatUsd(totalOutcomesUsd)}</span>
+             </div>
+           )}
         </div>
       )}
 
