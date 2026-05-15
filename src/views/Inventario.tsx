@@ -13,6 +13,7 @@ export default function Inventario() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [priceUsd, setPriceUsd] = useState("");
+  const [costUsd, setCostUsd] = useState("");
   const [stock, setStock] = useState("");
   const [minStockAlert, setMinStockAlert] = useState("5");
 
@@ -28,6 +29,7 @@ export default function Inventario() {
       await db.products.update(editingId, {
         name: name.trim(),
         priceUsd: parseFloat(priceUsd) || 0,
+        costUsd: parseFloat(costUsd) || 0,
         stock: parseFloat(stock) || 0,
         minStockAlert: parseFloat(minStockAlert) || 5
       });
@@ -36,6 +38,7 @@ export default function Inventario() {
         id: generateId(),
         name: name.trim(),
         priceUsd: parseFloat(priceUsd) || 0,
+        costUsd: parseFloat(costUsd) || 0,
         stock: parseFloat(stock) || 0,
         minStockAlert: parseFloat(minStockAlert) || 5,
         createdAt: new Date().toISOString()
@@ -54,6 +57,7 @@ export default function Inventario() {
     setEditingId(p.id);
     setName(p.name);
     setPriceUsd(p.priceUsd.toString());
+    setCostUsd(p.costUsd?.toString() || "");
     setStock(p.stock.toString());
     setMinStockAlert(p.minStockAlert.toString());
     setShowAddModal(true);
@@ -64,6 +68,7 @@ export default function Inventario() {
     setEditingId(null);
     setName("");
     setPriceUsd("");
+    setCostUsd("");
     setStock("");
     setMinStockAlert("5");
   };
@@ -101,13 +106,20 @@ export default function Inventario() {
               <div key={product.id} className="card" style={{ padding: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div style={{ flex: 1 }}>
                   <h3 className="font-bold mb-1" style={{ fontSize: '1.1rem' }}>{product.name}</h3>
-                  <div className="flex gap-2 items-center">
-                    <span className="font-bold text-success">${formatUsd(product.priceUsd)}</span>
-                    <span className="text-secondary text-sm">•</span>
-                    <span className="text-sm font-bold" style={{ color: isLowStock ? 'var(--danger)' : 'var(--text-secondary)' }}>
-                      Stock: {product.stock}
-                      {isLowStock && <AlertTriangle size={14} className="inline ml-1" style={{ position: 'relative', top: '-1px' }} />}
-                    </span>
+                  <div className="flex flex-col gap-1">
+                    <div className="flex gap-2 items-center">
+                      <span className="font-bold text-success">${formatUsd(product.priceUsd)}</span>
+                      <span className="text-secondary text-sm">•</span>
+                      <span className="text-sm font-bold" style={{ color: isLowStock ? 'var(--danger)' : 'var(--text-secondary)' }}>
+                        Stock: {product.stock}
+                        {isLowStock && <AlertTriangle size={14} className="inline ml-1" style={{ position: 'relative', top: '-1px' }} />}
+                      </span>
+                    </div>
+                    {product.costUsd !== undefined && product.costUsd > 0 && (
+                      <div className="text-xs text-secondary font-medium mt-1 bg-surface p-1.5 rounded-md inline-block w-fit" style={{ border: '1px solid var(--border-color)' }}>
+                        Costo: ${formatUsd(product.costUsd)} • Ganancia: <span className="text-success font-bold">${formatUsd(product.priceUsd - product.costUsd)}</span> c/u
+                      </div>
+                    )}
                   </div>
                 </div>
                 
@@ -140,13 +152,17 @@ export default function Inventario() {
               </div>
               <div className="flex gap-4">
                 <div className="input-group" style={{ flex: 1 }}>
+                  <label className="input-label">Costo ($) Opcional</label>
+                  <input type="number" step="0.01" className="input-field" value={costUsd} onChange={e => setCostUsd(e.target.value)} />
+                </div>
+                <div className="input-group" style={{ flex: 1 }}>
                   <label className="input-label">Precio ($) *</label>
                   <input type="number" step="0.01" className="input-field" value={priceUsd} onChange={e => setPriceUsd(e.target.value)} required />
                 </div>
-                <div className="input-group" style={{ flex: 1 }}>
-                  <label className="input-label">Unidades en Stock *</label>
-                  <input type="number" step="1" className="input-field" value={stock} onChange={e => setStock(e.target.value)} required />
-                </div>
+              </div>
+              <div className="input-group">
+                <label className="input-label">Unidades en Stock *</label>
+                <input type="number" step="1" className="input-field" value={stock} onChange={e => setStock(e.target.value)} required />
               </div>
               <div className="input-group">
                 <label className="input-label">Alerta de Stock Bajo (Avisar si quedan:)</label>

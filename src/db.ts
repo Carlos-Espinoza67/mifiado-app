@@ -11,6 +11,7 @@ export interface Product {
   id: string; // UUID
   name: string;
   priceUsd: number;
+  costUsd?: number; // Costo de compra para calcular ganancia
   stock: number;
   minStockAlert: number;
   createdAt: string; // ISO string
