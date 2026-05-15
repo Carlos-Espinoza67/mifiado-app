@@ -132,9 +132,7 @@ export default function Dashboard() {
         marginTop: '0.5rem'
       }}>CuentasClaras</h1>
       
-      <p className="text-secondary text-sm mb-4" style={{ lineHeight: '1.4' }}>
-        Hoy vendiste <strong className="text-primary">${formatUsd(totalSalesUsd)}</strong>, te abonaron <strong className="text-primary">${formatUsd(todayAbonosUsd)}</strong>, y tu inventario tiene <strong className="text-primary">{lowStockProducts.length}</strong> productos bajos en stock.
-      </p>
+
 
       {lowStockProducts.length > 0 && (
         <div onClick={() => navigate('/inventario')} className="card mb-4 cursor-pointer" style={{ background: 'var(--danger-soft)', borderColor: 'var(--danger)', borderWidth: '2px', borderStyle: 'solid', padding: '0.8rem 1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '0 0 1rem 0' }}>
