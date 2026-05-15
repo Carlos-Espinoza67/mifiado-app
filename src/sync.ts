@@ -41,6 +41,7 @@ export async function syncToCloud(userId: string) {
     user_id: userId,
     name: p.name,
     price_usd: p.priceUsd,
+    cost_usd: p.costUsd,
     stock: p.stock,
     min_stock_alert: p.minStockAlert,
     created_at: p.createdAt || new Date().toISOString(),
@@ -63,8 +64,15 @@ export async function syncToCloud(userId: string) {
       const { error } = await supabase.from('transactions').upsert(safeCloudTransactions);
       if (error) console.error("Error upsert transactions", error);
     }
-    if (cloudProducts.length > 0) {
-      const { error } = await supabase.from('products').upsert(cloudProducts);
+    // Remove undefined from cloudProducts to avoid Supabase errors if column doesn't exist or allows null
+    const safeCloudProducts = cloudProducts.map(p => {
+        const cleanP: any = {...p};
+        Object.keys(cleanP).forEach(key => cleanP[key] === undefined && delete cleanP[key]);
+        return cleanP;
+    });
+
+    if (safeCloudProducts.length > 0) {
+      const { error } = await supabase.from('products').upsert(safeCloudProducts);
       if (error) console.error("Error upsert products", error);
     }
     
@@ -111,6 +119,7 @@ export async function syncFromCloud(userId: string) {
        id: p.id,
        name: p.name,
        priceUsd: p.price_usd,
+       costUsd: p.cost_usd || undefined,
        stock: p.stock,
        minStockAlert: p.min_stock_alert,
        createdAt: p.created_at
